@@ -1,0 +1,4 @@
+[run]
+branch = True
+source = tahoe_sites
+omit = ./manage.py, */*/tests/*, */migrations/*, */__init__.py

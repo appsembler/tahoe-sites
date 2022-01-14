@@ -1,0 +1,3 @@
+https://github.com/appsembler/edx-organizations/archive/5.2.0-appsembler11.tar.gz
+django<2.3  # compatibility with edx-organizations
+django-model-utils<=4.0.0  # compatibility with python3.5

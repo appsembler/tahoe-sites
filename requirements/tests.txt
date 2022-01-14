@@ -1,0 +1,12 @@
+-r base.txt
+
+coverage
+ddt
+django-nose
+factory-boy
+pylint-celery
+pylint-django
+pylint-plugin-utils
+pytest-cov
+pytest-django
+pytest
