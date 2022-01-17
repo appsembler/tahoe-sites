@@ -21,5 +21,4 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     packages=find_packages(exclude=['tests']),
-    dependency_links=['edx-organizations @ https://github.com/appsembler/edx-organizations/archive/5.2.0-appsembler13.tar.gz']
 )
