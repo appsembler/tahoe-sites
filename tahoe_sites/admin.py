@@ -29,14 +29,17 @@ class UserOrganizationMappingAdmin(admin.ModelAdmin):
         'is_admin',
     ]
 
-    def email(self, mapping):
+    @staticmethod
+    def email(mapping):
         """Display user email."""
         return mapping.user.email
 
-    def username(self, mapping):
+    @staticmethod
+    def username(mapping):
         """Display username."""
         return mapping.user.username
 
-    def organization_name(self, mapping):
+    @staticmethod
+    def organization_name(mapping):
         """Display organization name."""
         return mapping.organization.short_name

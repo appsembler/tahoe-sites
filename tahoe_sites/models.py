@@ -1,3 +1,6 @@
+"""
+Package models goes here
+"""
 import uuid
 
 from django.conf import settings
@@ -19,13 +22,14 @@ class UserOrganizationMapping(models.Model):
     is_admin = models.BooleanField(
         default=False,
         # TODO: Remove once we migrate off edx-organizations tables
-        db_column=zd_helpers.get_db_column('is_amc_admin'),
+        db_column=zd_helpers.get_replacement_name('is_amc_admin'),
     )
 
     class Meta:
         app_label = 'tahoe_sites'
         managed = zd_helpers.get_meta_managed()
-        db_table = zd_helpers.get_db_table('organizations_userorganizationmapping')
+        db_table = zd_helpers.get_replacement_name('organizations_userorganizationmapping')
+        unique_together = zd_helpers.get_unique_together(('user', 'organization'))
 
     def __str__(self):
         return 'UserOrganizationMapping<{email}, {organization}>'.format(
@@ -46,3 +50,17 @@ class TahoeSiteUUID(models.Model):
 
     class Meta:
         app_label = 'tahoe_sites'
+
+    @classmethod
+    def get_organization_by_uuid(cls, organization_uuid):
+        """
+        Get an organization object from it's uuid
+        """
+        return cls.objects.get(site_uuid=organization_uuid).organization
+
+    @classmethod
+    def get_uuid_by_organization(cls, organization):
+        """
+        Get the uuid when from it's related organization
+        """
+        return cls.objects.get(organization=organization).site_uuid

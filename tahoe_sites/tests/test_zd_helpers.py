@@ -1,25 +1,11 @@
 """
-Tests for helper methods
+Tests for zd_helper methods
 """
 import pytest
 from django.conf import settings
 from django.test import SimpleTestCase
 
 from tahoe_sites import zd_helpers
-from tahoe_sites.helpers import get_organization_by_uuid
-from tahoe_sites.models import TahoeSiteUUID
-from tahoe_sites.tests.test_models import DefaultsForTestsMixin
-
-
-class TestHelpers(DefaultsForTestsMixin):
-    def test_get_organization_by_uuid(self):
-        """
-        Test get_organization_by_uuid helper
-        """
-        site = TahoeSiteUUID.objects.create(
-            organization=self.default_org,
-        )
-        assert get_organization_by_uuid(site.site_uuid) == self.default_org
 
 
 @pytest.mark.skipif(not settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
@@ -28,31 +14,30 @@ class TestZDHelpersWithOrgs(SimpleTestCase):
     """
     Test ZDHelpers when TAHOE_SITES_USE_ORGS_MODELS flag is On
     """
-    def test_should_site_use_org_models(self):
+
+    @staticmethod
+    def test_should_site_use_org_models():
         """
         Test should_site_use_org_models
         """
         assert zd_helpers.should_site_use_org_models()
 
-    def test_get_meta_managed(self):
+    @staticmethod
+    def test_get_meta_managed():
         """
         Test get_meta_managed
         """
         assert not zd_helpers.get_meta_managed()
 
-    def test_get_db_table(self):
+    @staticmethod
+    def test_get_replacement_name():
         """
-        Test get_db_table
+        Test get_replacement_name
         """
-        assert zd_helpers.get_db_table('old_name') == 'old_name'
+        assert zd_helpers.get_replacement_name('old_name') == 'old_name'
 
-    def test_get_db_column(self):
-        """
-        Test get_db_column
-        """
-        assert zd_helpers.get_db_column('old_name') == 'old_name'
-
-    def test_get_unique_together(self):
+    @staticmethod
+    def test_get_unique_together():
         """
         Test get_unique_together
         """
@@ -61,35 +46,33 @@ class TestZDHelpersWithOrgs(SimpleTestCase):
 
 @pytest.mark.skipif(settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
                     reason='Runs only when TAHOE_SITES_USE_ORGS_MODELS is off')
-class TestZDHelpersWithOrgs(SimpleTestCase):
+class TestZDHelpersWithoutOrgs(SimpleTestCase):
     """
     Test ZDHelpers when TAHOE_SITES_USE_ORGS_MODELS flag is On
     """
-    def test_should_site_use_org_models(self):
+    @staticmethod
+    def test_should_site_use_org_models():
         """
         Test should_site_use_org_models
         """
         assert not zd_helpers.should_site_use_org_models()
 
-    def test_get_meta_managed(self):
+    @staticmethod
+    def test_get_meta_managed():
         """
         Test get_meta_managed
         """
         assert zd_helpers.get_meta_managed()
 
-    def test_get_db_table(self):
+    @staticmethod
+    def test_get_replacement_name():
         """
-        Test get_db_table
+        Test get_replacement_name
         """
-        assert zd_helpers.get_db_table('old_name') is None
+        assert zd_helpers.get_replacement_name('old_name') is None
 
-    def test_get_db_column(self):
-        """
-        Test get_db_column
-        """
-        assert zd_helpers.get_db_column('old_name') is None
-
-    def test_get_unique_together(self):
+    @staticmethod
+    def test_get_unique_together():
         """
         Test get_unique_together
         """
