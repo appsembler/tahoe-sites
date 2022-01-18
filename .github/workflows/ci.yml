@@ -1,0 +1,48 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-python35:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tox-env:
+          - py35-codetest-noorgs
+          - py35-codetest-withorgs
+    steps:
+     - uses: actions/checkout@v2
+     - name: Set up Python 3.5
+       uses: actions/setup-python@v2
+       with:
+         python-version: 3.5
+     - name: Install dependencies
+       run: |
+         pip install tox
+     - name: Test with tox
+       run: tox -e ${{ matrix.tox-env }}
+
+  test-python38:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tox-env:
+          - py38-codetest-noorgs
+          - py38-codetest-withorgs
+          - py38-codelint
+    steps:
+     - uses: actions/checkout@v2
+     - name: Set up Python 3.8
+       uses: actions/setup-python@v2
+       with:
+         python-version: 3.8
+     - name: Install dependencies
+       run: |
+         pip install tox
+     - name: Test with tox
+       run: tox -e ${{ matrix.tox-env }}
