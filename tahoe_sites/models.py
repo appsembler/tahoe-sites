@@ -56,6 +56,8 @@ class TahoeSiteUUID(models.Model):
         """
         Get an organization object from it's uuid
         """
+        if zd_helpers.should_site_use_org_models():
+            return Organization.objects.get(edx_uuid=organization_uuid)
         return cls.objects.get(site_uuid=organization_uuid).organization
 
     @classmethod
@@ -63,4 +65,6 @@ class TahoeSiteUUID(models.Model):
         """
         Get the uuid when from it's related organization
         """
+        if zd_helpers.should_site_use_org_models():
+            return organization.edx_uuid
         return cls.objects.get(organization=organization).site_uuid
