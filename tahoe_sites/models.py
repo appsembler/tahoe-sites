@@ -32,6 +32,11 @@ class UserOrganizationMapping(models.Model):
         unique_together = zd_helpers.get_unique_together(('user', 'organization'))
 
     def __str__(self):
+        """
+        Converts the object into a string
+
+        :return: string representation of the object
+        """
         return 'UserOrganizationMapping<{email}, {organization}>'.format(
             email=self.user.email,  # pylint: disable=no-member
             organization=self.organization.short_name,
