@@ -7,7 +7,7 @@ from django.db.utils import IntegrityError
 from django.test import TestCase
 from organizations.models import Organization
 
-from tahoe_sites.models import TahoeSiteUUID, UserOrganizationMapping
+from tahoe_sites.models import TahoeSite, UserOrganizationMapping
 from tahoe_sites.tests.fatories import UserFactory
 from tahoe_sites.tests.utils import create_organization_mapping
 from tahoe_sites.zd_helpers import should_site_use_org_models
@@ -74,9 +74,9 @@ class TestUserOrganizationMapping(DefaultsForTestsMixin):
         )
 
 
-class TestTahoeSiteUUID(DefaultsForTestsMixin):
+class TestTahoeSite(DefaultsForTestsMixin):
     """
-    Tests for TahoeSiteUUID model
+    Tests for TahoeSite model
     """
     @pytest.mark.skipif(settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
                         reason='Runs only when TAHOE_SITES_USE_ORGS_MODELS is off')
@@ -84,13 +84,13 @@ class TestTahoeSiteUUID(DefaultsForTestsMixin):
         """
         Verify that creating an Organization object will signal a creation for TahoeUUISite
         """
-        sites_count = TahoeSiteUUID.objects.count()
+        sites_count = TahoeSite.objects.count()
         organization = self._create_organization(
             name='dummy organization',
             short_name='DO',
         )
-        assert TahoeSiteUUID.objects.count() == sites_count + 1
-        assert TahoeSiteUUID.objects.get(organization=organization)
+        assert TahoeSite.objects.count() == sites_count + 1
+        assert TahoeSite.objects.get(organization=organization)
 
     @pytest.mark.skipif(settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
                         reason='Runs only when TAHOE_SITES_USE_ORGS_MODELS is off')
@@ -98,12 +98,12 @@ class TestTahoeSiteUUID(DefaultsForTestsMixin):
         """
         Verify that saving an Organization object will not create another TahoeUUISite
         """
-        sites_count = TahoeSiteUUID.objects.count()
+        sites_count = TahoeSite.objects.count()
         organization = self._create_organization(
             name='dummy organization',
             short_name='DO',
         )
         organization.name = 'new name'
         organization.save()
-        assert TahoeSiteUUID.objects.count() == sites_count + 1
-        assert TahoeSiteUUID.objects.get(organization=organization)
+        assert TahoeSite.objects.count() == sites_count + 1
+        assert TahoeSite.objects.get(organization=organization)

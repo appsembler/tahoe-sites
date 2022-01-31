@@ -43,7 +43,7 @@ class UserOrganizationMapping(models.Model):
         )
 
 
-class TahoeSiteUUID(models.Model):
+class TahoeSite(models.Model):
     """
     Handle Site UUID
     """

@@ -6,7 +6,7 @@ from django.conf import settings
 from organizations.models import Organization
 
 from tahoe_sites import api
-from tahoe_sites.models import TahoeSiteUUID
+from tahoe_sites.models import TahoeSite
 from tahoe_sites.tests.fatories import UserFactory
 from tahoe_sites.tests.test_models import DefaultsForTestsMixin
 from tahoe_sites.tests.utils import create_organization_mapping
@@ -52,7 +52,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         Test get_organization_by_uuid helper when edx-organizations customization is off
         """
-        default_site = TahoeSiteUUID.objects.get(organization=self.default_org)
+        default_site = TahoeSite.objects.get(organization=self.default_org)
         assert api.get_organization_by_uuid(default_site.site_uuid) == self.default_org
 
     @pytest.mark.skipif(settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
@@ -61,7 +61,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         Test get_uuid_by_organization helper when edx-organizations customization is off
         """
-        default_site = TahoeSiteUUID.objects.get(organization=self.default_org)
+        default_site = TahoeSite.objects.get(organization=self.default_org)
         assert api.get_uuid_by_organization(self.default_org) == default_site.site_uuid
 
     @pytest.mark.skipif(not settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
