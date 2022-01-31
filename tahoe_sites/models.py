@@ -32,6 +32,11 @@ class UserOrganizationMapping(models.Model):
         unique_together = zd_helpers.get_unique_together(('user', 'organization'))
 
     def __str__(self):
+        """
+        Converts the object into a string
+
+        :return: string representation of the object
+        """
         return 'UserOrganizationMapping<{email}, {organization}>'.format(
             email=self.user.email,  # pylint: disable=no-member
             organization=self.organization.short_name,
@@ -50,21 +55,3 @@ class TahoeSiteUUID(models.Model):
 
     class Meta:
         app_label = 'tahoe_sites'
-
-    @classmethod
-    def get_organization_by_uuid(cls, organization_uuid):
-        """
-        Get an organization object from it's uuid
-        """
-        if zd_helpers.should_site_use_org_models():
-            return Organization.objects.get(edx_uuid=organization_uuid)
-        return cls.objects.get(site_uuid=organization_uuid).organization
-
-    @classmethod
-    def get_uuid_by_organization(cls, organization):
-        """
-        Get the uuid when from it's related organization
-        """
-        if zd_helpers.should_site_use_org_models():
-            return organization.edx_uuid
-        return cls.objects.get(organization=organization).site_uuid

@@ -31,15 +31,30 @@ class UserOrganizationMappingAdmin(admin.ModelAdmin):
 
     @staticmethod
     def email(mapping):
-        """Display user email."""
+        """
+        Display email
+
+        :param mapping: UserOrganizationMapping object
+        :return: email
+        """
         return mapping.user.email
 
     @staticmethod
     def username(mapping):
-        """Display username."""
+        """
+        Display username
+
+        :param mapping: UserOrganizationMapping object
+        :return: username
+        """
         return mapping.user.username
 
     @staticmethod
     def organization_name(mapping):
-        """Display organization name."""
+        """
+        Display organization_name
+
+        :param mapping: UserOrganizationMapping object
+        :return: short_name as organization_name
+        """
         return mapping.organization.short_name
