@@ -32,16 +32,16 @@ class TestAPIHelpers(DefaultsForTestsMixin):
             Org2        --> user2
             Org3        --> None
         """
-        self.org1 = self._create_organization(name='Org1', short_name='O1')
+        self.org1 = self.create_organization(name='Org1', short_name='O1')
         create_organization_mapping(user=self.default_user, organization=self.default_org)
         self.mapping = create_organization_mapping(user=self.default_user, organization=self.org1)
 
-        self.org2 = self._create_organization(name='Org2', short_name='O2')
+        self.org2 = self.create_organization(name='Org2', short_name='O2')
         self.user2 = UserFactory.create()
         create_organization_mapping(user=self.user2, organization=self.org1)
         create_organization_mapping(user=self.user2, organization=self.org2)
 
-        self._create_organization(name='Org3', short_name='O3')
+        self.create_organization(name='Org3', short_name='O3')
 
         # We have four organizations
         assert Organization.objects.count() == 4

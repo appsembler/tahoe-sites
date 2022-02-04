@@ -41,6 +41,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('site_uuid', models.UUIDField(default=uuid.uuid4, unique=True)),
                 ('organization', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='organizations.Organization')),
+                ('site', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to='sites.Site')),
             ],
         ),
     ]

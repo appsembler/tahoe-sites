@@ -4,6 +4,7 @@ Package models goes here
 import uuid
 
 from django.conf import settings
+from django.contrib.sites.models import Site
 from django.db import models
 from organizations.models import Organization
 
@@ -52,6 +53,10 @@ class TahoeSite(models.Model):
         on_delete=models.CASCADE,
     )
     site_uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    site = models.OneToOneField(
+        Site,
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         app_label = 'tahoe_sites'
