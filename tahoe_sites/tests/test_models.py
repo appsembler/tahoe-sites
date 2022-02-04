@@ -42,8 +42,15 @@ class DefaultsForTestsMixin(TestCase):
             name='test organization',
             short_name='TO'
         )
-        self.default_site = self.create_django_site('dummy.com')
-        TahoeSite.objects.create(organization=self.default_org, site=self.default_site)
+        self.default_django_site = self.create_django_site('dummy.com')
+        if should_site_use_org_models():
+            self.default_tahoe_site = None
+            self.default_org.sites.add(self.default_django_site)
+        else:
+            self.default_tahoe_site = TahoeSite.objects.create(
+                organization=self.default_org,
+                site=self.default_django_site
+            )
 
         self.default_user = UserFactory.create()
 
