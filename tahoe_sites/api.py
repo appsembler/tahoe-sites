@@ -12,8 +12,9 @@ Non-stable APIs they should be placed in the `helpers.py` module instead.
    - New parameters should have safe defaults
  * For breaking changes, new functions should be created
 """
-
+import organizations.api
 from django.contrib.auth import get_user_model
+from django.contrib.sites.models import Site
 from organizations.models import Organization
 
 from tahoe_sites import zd_helpers
@@ -64,6 +65,47 @@ def get_organizations_for_user(user, with_inactive_users=False, without_admins=F
     return Organization.objects.filter(
         pk__in=UserOrganizationMapping.objects.filter(user=user, **extra_params).values('organization_id')
     )
+
+
+def create_tahoe_site(domain, short_name, uuid=None):
+    """
+    Centralized method to create the site objects in both `tahoe-sites` and `edx-organizations`.
+
+    Other pieces like SiteConfigurations are out of the scope of this helper.
+
+    :param domain: Site domain.
+    :param short_name: Organization short name, course key component and site name.
+    :param uuid: UUID string or object. Used to identify organizations and sites across Tahoe services.
+    :return: dict with `site` `organization` and `uuid` fields.
+    """
+    site = Site.objects.create(domain=domain, name=short_name)
+
+    organization_data = {
+        'name': short_name,
+        'short_name': short_name,
+        'description': 'Organization of {domain} (automatic)'.format(domain=site.domain),
+    }
+
+    if uuid and zd_helpers.should_site_use_org_models():
+        organization_data['edx_uuid'] = uuid
+
+    organization_serialized = organizations.api.add_organization(organization_data)
+    organization = Organization.objects.get(pk=organization_serialized['id'])
+
+    if zd_helpers.should_site_use_org_models():
+        returned_uuid = organization.edx_uuid
+    else:
+        link = TahoeSiteUUID.objects.create(
+            organization=organization,
+            site_uuid=uuid,
+        )
+        returned_uuid = link.site_uuid
+
+    return {
+        'uuid': returned_uuid,
+        'site': site,
+        'organization': organization,
+    }
 
 
 def get_users_of_organization(organization, with_inactive_users=False, without_admins=False):
