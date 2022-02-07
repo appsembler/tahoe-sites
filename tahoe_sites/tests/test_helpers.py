@@ -164,20 +164,6 @@ class TestHelpers(DefaultsForTestsMixin):
         self.mapping.save()
         assert list(helpers.get_users_of_organization(self.org1, without_admins=True)) == [self.user2]
 
-    def test_is_active_admin_on_any_organization(self):
-        """
-        Verify that is_active_admin_on_any_organization helper returns True if the given user
-        is an admin on any of the given organizations
-        """
-        self._prepare_mapping_data()
-        org_ids = Organization.objects.values('id')
-
-        assert not helpers.is_active_admin_on_any_organization(user=self.default_user, org_ids=org_ids)
-
-        self.mapping.is_admin = True
-        self.mapping.save()
-        assert helpers.is_active_admin_on_any_organization(user=self.default_user, org_ids=org_ids)
-
     def test_is_active_admin_on_organization(self):
         """
         Verify that is_active_admin_on_organization helper returns True if the given user
