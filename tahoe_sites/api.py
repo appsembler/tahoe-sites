@@ -67,7 +67,7 @@ def get_organizations_for_user(user, with_inactive_users=False, without_admins=F
     )
 
 
-def create_tahoe_site(domain, short_name, uuid=None):
+def create_tahoe_site(domain, short_name, site_uuid=None):
     """
     Centralized method to create the site objects in both `tahoe-sites` and `edx-organizations`.
 
@@ -75,8 +75,8 @@ def create_tahoe_site(domain, short_name, uuid=None):
 
     :param domain: Site domain.
     :param short_name: Organization short name, course key component and site name.
-    :param uuid: UUID string or object. Used to identify organizations and sites across Tahoe services.
-    :return: dict with `site` `organization` and `uuid` fields.
+    :param site_uuid: UUID string or object. Used to identify organizations and sites across Tahoe services.
+    :return: dict with `site` `organization` and `site_uuid` fields.
     """
     site = Site.objects.create(domain=domain, name=short_name)
 
@@ -86,8 +86,8 @@ def create_tahoe_site(domain, short_name, uuid=None):
         'description': 'Organization of {domain} (automatic)'.format(domain=site.domain),
     }
 
-    if uuid and zd_helpers.should_site_use_org_models():
-        organization_data['edx_uuid'] = uuid
+    if site_uuid and zd_helpers.should_site_use_org_models():
+        organization_data['edx_uuid'] = site_uuid
 
     organization_serialized = organizations.api.add_organization(organization_data)
     organization = Organization.objects.get(pk=organization_serialized['id'])
@@ -97,12 +97,12 @@ def create_tahoe_site(domain, short_name, uuid=None):
     else:
         link = TahoeSiteUUID.objects.create(
             organization=organization,
-            site_uuid=uuid,
+            site_uuid=site_uuid,
         )
         returned_uuid = link.site_uuid
 
     return {
-        'uuid': returned_uuid,
+        'site_uuid': returned_uuid,
         'site': site,
         'organization': organization,
     }
