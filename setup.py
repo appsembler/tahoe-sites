@@ -9,11 +9,10 @@ setup(
     description='Site and organization multi-tenancy management for Appsembler Tahoe',
     author='Appsembler',
     url='https://github.com/appsembler/tahoe-sites',
-    license='MIT License - Copyright (c) 2022 Appsembler',
     classifiers=[
         'Framework :: Django',
         'Framework :: Django :: 2.2',
-        'License :: MIT License - Copyright (c) 2022 Appsembler',
+        'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
