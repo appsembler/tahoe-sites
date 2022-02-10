@@ -2,6 +2,7 @@
 Tests for models
 """
 import uuid
+from unittest import mock
 
 import ddt
 import pytest
@@ -305,3 +306,39 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         Verify that get_uuid_by_site returns the related UUID of the given Site
         """
         assert api.get_uuid_by_site(site=self.default_django_site) == api.get_uuid_by_organization(self.default_org)
+
+    def test_get_current_site_no_site(self):
+        """
+        Emulate the behaviour of `openedx.core.djangoapps.theming.helpers.get_current_site`.
+        """
+        request = mock.Mock(site=None)
+        self.assertFalse(api.get_current_site(request))
+
+    def test_get_current_site_with_site(self):
+        """
+        Emulate the behaviour of `openedx.core.djangoapps.theming.helpers.get_current_site`.
+        """
+        request = mock.Mock(site={'domain': 'test.org'})
+        self.assertTrue(api.get_current_site(request))
+
+    @mock.patch('tahoe_sites.api.get_organization_by_site')
+    def test_get_current_organization(self, mock_get_organization_by_site):  # pylint: disable=no-self-use
+        """
+        Verify that get_current_organization calls get_organization_by_site to return the current site
+        """
+        site = Site.objects.create(domain='test.org')
+        api.get_current_organization(request=mock.Mock(site=site))
+
+        mock_get_organization_by_site.assert_called_with(site)
+
+    def test_get_current_organization_main_site(self):
+        """
+        Verify that get_current_organization raises an exception if main-site is the current site
+        """
+        site = Site.objects.create(domain='test.org')
+        with mock.patch.object(settings, 'SITE_ID', site.id):
+            with self.assertRaisesMessage(
+                expected_exception=Organization.DoesNotExist,
+                expected_message='Tahoe Sites: Should not find organization of main site `settings.SITE_ID`'
+            ):
+                api.get_current_organization(request=mock.Mock(site=site))

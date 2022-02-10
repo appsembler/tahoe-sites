@@ -15,6 +15,7 @@ Non-stable APIs they should be placed in the `helpers.py` module instead.
    - New parameters should have safe defaults
  * For breaking changes, new functions should be created
 """
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from organizations import api as organizations_api
@@ -233,3 +234,34 @@ def get_uuid_by_site(site):
     if zd_helpers.should_site_use_org_models():
         return Organization.objects.get(sites__in=[site]).edx_uuid
     return TahoeSite.objects.get(site=site).site_uuid
+
+
+def get_current_site(request):
+    """
+    Return current site.
+
+    This is a copy of Open edX's `openedx.core.djangoapps.theming.helpers.get_current_site`.
+
+    Returns:
+         (django.contrib.sites.models.Site): returns current site
+    """
+    return getattr(request, 'site', None)
+
+
+def get_current_organization(request):
+    """
+    Return a single organization for the current site.
+
+    :param request:
+    :raise Site.DoesNotExist when the site isn't found.
+    :raise Organization.DoesNotExist when the organization isn't found.
+    :raise Organization.MultipleObjectsReturned when more than one organization is returned.
+    :return Organization.
+    """
+    current_site = get_current_site(request)
+
+    main_site_id = getattr(settings, 'SITE_ID', None)
+    if main_site_id and current_site and current_site.id == main_site_id:
+        raise Organization.DoesNotExist('Tahoe Sites: Should not find organization of main site `settings.SITE_ID`')
+
+    return get_organization_by_site(current_site)

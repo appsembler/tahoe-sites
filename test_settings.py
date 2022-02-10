@@ -56,6 +56,8 @@ TEMPLATES = [
     },
 ]
 
+SITE_ID = 1
+
 # We can only run tests with a known flag value
 TAHOE_SITES_USE_ORGS_MODELS = os.environ.get('TAHOE_SITES_USE_ORGS_MODELS')
 if TAHOE_SITES_USE_ORGS_MODELS is None:
