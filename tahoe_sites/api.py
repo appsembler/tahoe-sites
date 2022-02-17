@@ -49,43 +49,43 @@ def get_uuid_by_organization(organization):
     return TahoeSite.objects.get(organization=organization).site_uuid
 
 
-def get_organizations_for_user(user, with_inactive_users=False, without_admins=False):
+def get_organization_for_user(user, fail_if_inactive=True, fail_if_site_admin=False):
     """
-    Return organizations related to the given user. By default, the list will ignore
-    organizations where the user is inactive
+    Return the organization related to the given user. By default, the it will return None is the user
+    is inactive in the organization
 
     :param user: user to filter on
-    :param with_inactive_users: include organizations where the user is inactive (default = False)
-    :param without_admins: exclude organizations where the user is set as admin (default = False)
+    :param fail_if_inactive: Fail if the user is inactive (default = True)
+    :param fail_if_site_admin: Fail if the user is an admin on the organization (default = False)
     :return: Organization objects related to the given user
     """
-    if with_inactive_users:
-        extra_params = {}
-    else:
+    if fail_if_inactive:
         extra_params = {'is_active': True}
-    if without_admins:
+    else:
+        extra_params = {}
+    if fail_if_site_admin:
         extra_params['is_admin'] = False
 
-    return Organization.objects.filter(
+    return Organization.objects.get(
         pk__in=UserOrganizationMapping.objects.filter(user=user, **extra_params).values('organization_id')
     )
 
 
-def get_users_of_organization(organization, with_inactive_users=False, without_admins=False):
+def get_users_of_organization(organization, without_inactive_users=True, without_site_admins=False):
     """
     Return users related to the given organization. By default, all active users will be
     returned including admin users
 
     :param organization: organization to filter on
-    :param with_inactive_users: include inactive users in the result (default = False)
-    :param without_admins: exclude admin users from the result (default = False)
+    :param without_inactive_users: exclude inactive users from the result (default = True)
+    :param without_site_admins: exclude admin users from the result (default = False)
     :return: User objects related to the given organization
     """
-    if with_inactive_users:
-        extra_params = {}
-    else:
+    if without_inactive_users:
         extra_params = {'is_active': True}
-    if without_admins:
+    else:
+        extra_params = {}
+    if without_site_admins:
         extra_params['is_admin'] = False
     return get_user_model().objects.filter(
         pk__in=UserOrganizationMapping.objects.filter(organization=organization, **extra_params).values('user_id')

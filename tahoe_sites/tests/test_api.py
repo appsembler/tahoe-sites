@@ -29,30 +29,28 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         self.org1 = None
         self.org2 = None
         self.mapping = None
-        self.user2 = None
+        self.org2_first_user = None
+        self.org2_second_user = None
 
     def _prepare_mapping_data(self):
         """
         mapping:
             default_org --> default_user
-            Org1        --> default_user  -----> self.mapping points here
-            Org1        --> user2
-            Org2        --> user2
-            Org3        --> None
+            Org1        --> None
+            Org2        --> org2_first_user  -----> self.mapping points here
+            Org2        --> org2_second_user
         """
         self.org1 = self.create_organization(name='Org1', short_name='O1')
-        create_organization_mapping(user=self.default_user, organization=self.default_org)
-        self.mapping = create_organization_mapping(user=self.default_user, organization=self.org1)
-
         self.org2 = self.create_organization(name='Org2', short_name='O2')
-        self.user2 = UserFactory.create()
-        create_organization_mapping(user=self.user2, organization=self.org1)
-        create_organization_mapping(user=self.user2, organization=self.org2)
+        self.org2_first_user = UserFactory.create()
+        self.org2_second_user = UserFactory.create()
 
-        self.create_organization(name='Org3', short_name='O3')
+        create_organization_mapping(user=self.default_user, organization=self.default_org)
+        self.mapping = create_organization_mapping(user=self.org2_first_user, organization=self.org2)
+        create_organization_mapping(user=self.org2_second_user, organization=self.org2)
 
-        # We have four organizations
-        assert Organization.objects.count() == 4
+        # We have three organizations
+        assert Organization.objects.count() == 3
 
     @pytest.mark.skipif(settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
                         reason='Runs only when TAHOE_SITES_USE_ORGS_MODELS is off')
@@ -86,47 +84,46 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         assert api.get_uuid_by_organization(self.default_org) == self.default_org.edx_uuid
 
-    def test_get_organizations_for_user_default(self):
+    def test_get_organization_for_user_default(self):
         """
-        Verify that get_active_organizations_for_user helper returns only related to active user
+        Verify that get_organization_for_user helper returns only related to active user
         """
         self._prepare_mapping_data()
 
-        # default_user is mapped to 2 of them
-        assert list(api.get_organizations_for_user(self.default_user)) == [self.default_org, self.org1]
+        # default_user is mapped to default_org
+        assert api.get_organization_for_user(self.default_user) == self.default_org
 
-        # user2 is mapped to two of them, one shared with default_user
-        assert list(api.get_organizations_for_user(self.user2)) == [self.org1, self.org2]
+        # org2_first_user is mapped to org2
+        assert api.get_organization_for_user(self.org2_first_user) == self.org2
 
         # records with inactive user will not be returned
         self.mapping.is_active = False
         self.mapping.save()
-        assert list(api.get_organizations_for_user(self.default_user)) == [self.default_org]
+        with self.assertRaises(expected_exception=Organization.DoesNotExist):
+            api.get_organization_for_user(self.org2_first_user)
 
-    def test_get_organizations_for_user_with_inactive_users(self):
+    def test_get_organization_for_user_with_inactive_users(self):
         """
-        Verify that get_active_organizations_for_user helper can return all organization related to a user
+        Verify that get_organization_for_user helper can return all organization related to a user
         including organizations having that user deactivated
         """
         self._prepare_mapping_data()
 
         self.mapping.is_active = False
         self.mapping.save()
-        assert list(api.get_organizations_for_user(self.default_user, with_inactive_users=True)) == [
-            self.default_org,
-            self.org1
-        ]
+        assert api.get_organization_for_user(self.default_user, fail_if_inactive=False) == self.default_org
 
-    def test_get_organizations_for_user_without_admins(self):
+    def test_get_organization_for_user_without_admins(self):
         """
-        Verify that get_active_organizations_for_user helper can return all organization related to a user
+        Verify that get_organization_for_user helper can return all organization related to a user
         excluding organizations having that user as an admin
         """
         self._prepare_mapping_data()
 
         self.mapping.is_admin = True
         self.mapping.save()
-        assert list(api.get_organizations_for_user(self.default_user, without_admins=True)) == [self.default_org]
+        with self.assertRaises(expected_exception=Organization.DoesNotExist):
+            api.get_organization_for_user(self.org2_first_user, fail_if_site_admin=True)
 
     def test_get_users_of_organization(self):
         """
@@ -137,13 +134,13 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         # default_org is mapped to default_user
         assert list(api.get_users_of_organization(self.default_org)) == [self.default_user]
 
-        # Org1 is mapped to two users
-        assert list(api.get_users_of_organization(self.org1)) == [self.default_user, self.user2]
+        # Org2 is mapped to two users
+        assert list(api.get_users_of_organization(self.org2)) == [self.org2_first_user, self.org2_second_user]
 
         # inactive users will not be returned
         self.mapping.is_active = False
         self.mapping.save()
-        assert list(api.get_users_of_organization(self.org1)) == [self.user2]
+        assert list(api.get_users_of_organization(self.org2)) == [self.org2_second_user]
 
     def test_get_users_of_organization_with_inactive_users(self):
         """
@@ -154,9 +151,9 @@ class TestAPIHelpers(DefaultsForTestsMixin):
 
         self.mapping.is_active = False
         self.mapping.save()
-        assert list(api.get_users_of_organization(self.org1, with_inactive_users=True)) == [
-            self.default_user,
-            self.user2
+        assert list(api.get_users_of_organization(self.org2, without_inactive_users=False)) == [
+            self.org2_first_user,
+            self.org2_second_user
         ]
 
     def test_get_users_of_organization_without_admins(self):
@@ -168,7 +165,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
 
         self.mapping.is_admin = True
         self.mapping.save()
-        assert list(api.get_users_of_organization(self.org1, without_admins=True)) == [self.user2]
+        assert list(api.get_users_of_organization(self.org2, without_site_admins=True)) == [self.org2_second_user]
 
     def test_is_active_admin_on_organization(self):
         """
@@ -177,11 +174,11 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         self._prepare_mapping_data()
 
-        assert not api.is_active_admin_on_organization(user=self.default_user, organization=self.org1)
+        assert not api.is_active_admin_on_organization(user=self.org2_first_user, organization=self.org2)
 
         self.mapping.is_admin = True
         self.mapping.save()
-        assert api.is_active_admin_on_organization(user=self.default_user, organization=self.org1)
+        assert api.is_active_admin_on_organization(user=self.org2_first_user, organization=self.org2)
 
     @pytest.mark.skipif(not settings.FEATURES['TAHOE_SITES_USE_ORGS_MODELS'],
                         reason='Runs only when TAHOE_SITES_USE_ORGS_MODELS is on')

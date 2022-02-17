@@ -1,9 +1,10 @@
 """
 Tests for models
 """
-import pytest
-from django.db.utils import IntegrityError
+from unittest import mock
+
 from django.contrib.sites.models import Site
+from django.db.utils import IntegrityError
 from django.test import TestCase
 from organizations.models import Organization
 
@@ -59,25 +60,57 @@ class TestUserOrganizationMapping(DefaultsForTestsMixin):
     """
     Tests for UserOrganizationMapping model
     """
-    @pytest.mark.skipif(should_site_use_org_models(), reason='Not implemented in edx-organizations')
-    def test_same_user_same_org(self):
+    def test_is_user_already_mapped_false(self):
         """
-        Having the same user for the same organization should not be allowed
+        Verify that is_user_already_mapped return False if the user is not mapped to any organization yet
         """
-        create_organization_mapping(
-            user=self.default_user,
-            organization=self.default_org,
-        )
-        assert UserOrganizationMapping.objects.count() == 1
+        assert UserOrganizationMapping.objects.filter(user=self.default_user).count() == 0
 
-        with self.assertRaisesMessage(
-            expected_exception=IntegrityError,
-            expected_message='UNIQUE constraint failed: tahoe_sites_userorganizationmapping.user_id,'
-        ):
-            create_organization_mapping(
-                user=self.default_user,
-                organization=self.default_org,
-            )
+        assert not UserOrganizationMapping.is_user_already_mapped(self.default_user)
+
+    def test_is_user_already_mapped_true(self):
+        """
+        Verify that is_user_already_mapped return True if the user is already mapped to any organization
+        """
+        create_organization_mapping(user=self.default_user, organization=self.default_org)
+
+        assert UserOrganizationMapping.objects.filter(user=self.default_user).count() == 1
+        assert UserOrganizationMapping.is_user_already_mapped(self.default_user)
+
+    def test_user_uniqueness_multiple_organizations(self):
+        """
+        Verify that can be mapped one once, no more
+        """
+        create_organization_mapping(user=self.default_user, organization=self.default_org)
+        assert UserOrganizationMapping.objects.filter(user=self.default_user).count() == 1
+
+        org2 = self.create_organization(name='organization2', short_name='O2')
+
+        for organization in [self.default_org, org2]:
+            with self.assertRaisesMessage(
+                expected_exception=IntegrityError,
+                expected_message='Cannot add user to organization. User already added to an organization!'
+            ):
+                create_organization_mapping(user=self.default_user, organization=organization)
+
+    @mock.patch('tahoe_sites.models.UserOrganizationMapping.is_user_already_mapped', return_value=False)
+    def test_save_new_record(self, mocked_method):
+        """
+        Verify that save method will call is_user_already_mapped to check for user uniqueness when creating new record
+        """
+        create_organization_mapping(user=self.default_user, organization=self.default_org)
+        mocked_method.assert_called_with(user=self.default_user)
+
+    def test_save_old_records(self):
+        """
+        Verify that save method will not call is_user_already_mapped when saving old records
+        """
+        mapping = create_organization_mapping(user=self.default_user, organization=self.default_org)
+
+        with mock.patch('tahoe_sites.models.UserOrganizationMapping.is_user_already_mapped') as mocked_method:
+            mapping.is_active = not mapping.is_active
+            mapping.save()
+        mocked_method.assert_not_called()
 
     def test_to_string(self):
         """
