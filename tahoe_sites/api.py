@@ -180,6 +180,25 @@ def create_tahoe_site(domain, short_name, uuid=None):
     }
 
 
+def update_admin_role_in_organization(user, organization, set_as_admin=False):
+    """
+    Update the user role in an organization to an admin or a learner.
+
+    This API helper is _not_ concerned about the `is_active` status, because other
+    helpers like `is_active_admin_on_organization` should take care of the `is_active` status.
+    """
+    # Sanity check for params to ensure we're updating a single entry at once.
+    assert user, 'Parameter `user` should not be None'
+    assert organization, 'Parameter `organization` should not be None'
+
+    UserOrganizationMapping.objects.filter(
+        user=user,
+        organization=organization,
+    ).update(
+        is_admin=set_as_admin,
+    )
+
+
 def get_site_by_organization(organization):
     """
     Get the site by its related organization

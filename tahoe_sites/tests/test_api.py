@@ -1,6 +1,8 @@
 """
 Tests for models
 """
+# pylint: disable=too-many-public-methods
+
 import uuid
 from unittest import mock
 
@@ -320,6 +322,58 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         request = mock.Mock(site={'domain': 'test.org'})
         self.assertTrue(api.get_current_site(request))
+
+    def test_update_admin_role_active_mapping(self):
+        """
+        Test update_admin_role_in_organization on active UserOrganizationMapping.
+        """
+        self._prepare_mapping_data()
+        mapping = self.mapping
+        mapping.is_admin = False
+        mapping.save()
+
+        user = mapping.user
+        organization = mapping.organization
+
+        # Set as admin.
+        api.update_admin_role_in_organization(user, organization, set_as_admin=True)
+        assert api.is_active_admin_on_organization(user, organization), 'Should set as admin'
+
+        # Set as admin one more time. Shouldn't fail and should keep the user as admin.
+        api.update_admin_role_in_organization(user, organization, set_as_admin=True)
+        assert api.is_active_admin_on_organization(user, organization), 'Should keep the user as admin'
+
+        # Set as non-admin.
+        api.update_admin_role_in_organization(user, organization, set_as_admin=False)
+        assert not api.is_active_admin_on_organization(user, organization), 'Should remove admin status'
+
+    def test_update_admin_role_inactive_mapping(self):
+        """
+        Test update_admin_role_in_organization on inactive UserOrganizationMapping.
+        """
+        self._prepare_mapping_data()
+        mapping = self.mapping
+        mapping.is_active = False
+        mapping.save()
+
+        user = mapping.user
+        organization = mapping.organization
+
+        # Set as admin, but for inactive.
+        api.update_admin_role_in_organization(user, organization, set_as_admin=True)
+        assert not api.is_active_admin_on_organization(user, organization), (
+            'Should not be active admin, because the user is admin but is_active=False'
+        )
+
+    def test_update_admin_role_null_parameters(self):  # pylint: disable=no-self-use
+        """
+        Test update_admin_role_in_organization when having None parameters.
+        """
+        with pytest.raises(AssertionError, match='Parameter `user` should not be None'):
+            api.update_admin_role_in_organization(user=None, organization=object())
+
+        with pytest.raises(AssertionError, match='Parameter `organization` should not be None'):
+            api.update_admin_role_in_organization(user=object(), organization=None)
 
     @mock.patch('tahoe_sites.api.get_organization_by_site')
     def test_get_current_organization(self, mock_get_organization_by_site):  # pylint: disable=no-self-use
