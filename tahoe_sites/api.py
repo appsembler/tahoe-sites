@@ -199,6 +199,17 @@ def update_admin_role_in_organization(user, organization, set_as_admin=False):
     )
 
 
+def add_user_to_organization(user, organization, is_admin=False):
+    """
+    Add user to an organization.
+    """
+    UserOrganizationMapping.objects.create(
+        user=user,
+        organization=organization,
+        is_admin=is_admin,
+    )
+
+
 def get_site_by_organization(organization):
     """
     Get the site by its related organization
