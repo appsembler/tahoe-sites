@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2022-02-24
+ - Move get_current_organization to this package
+ - New API helper update_admin_role_in_organization
+ - One Organization Per User
+ - New API Helper add_user_to_organization
+
 ## [0.1.1] - 2022-02-10
  - First release to be publish to PyPi
  - Most of the Python API helpers are ready to be used
@@ -15,5 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.1
  - Initial GitHub repo. Not released to PyPi.
 
-[unreleased]: https://github.com/appsembler/tahoe-sites/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/appsembler/tahoe-sites/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/appsembler/tahoe-sites/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/appsembler/tahoe-sites/compare/ef43ca91543432335e6ddb9b26cab11059811f64...v0.1.1
