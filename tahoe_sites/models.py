@@ -6,6 +6,9 @@ import uuid
 from django.conf import settings
 from django.contrib.sites.models import Site
 from django.db import models
+from django.db.models.signals import pre_save
+from django.db.utils import IntegrityError
+from django.dispatch import receiver
 from organizations.models import Organization
 
 from tahoe_sites import zd_helpers
@@ -30,7 +33,6 @@ class UserOrganizationMapping(models.Model):
         app_label = 'tahoe_sites'
         managed = zd_helpers.get_meta_managed()
         db_table = zd_helpers.get_replacement_name('organizations_userorganizationmapping')
-        unique_together = zd_helpers.get_unique_together(('user', 'organization'))
 
     def __str__(self):
         """
@@ -42,6 +44,27 @@ class UserOrganizationMapping(models.Model):
             email=self.user.email,  # pylint: disable=no-member
             organization=self.organization.short_name,
         )
+
+    @classmethod
+    def is_user_already_mapped(cls, user):
+        """
+        Check if the user already mapped to an organization or not (regardless of active/admin statuses)
+
+        :param user: User to check
+        :return: <True> if the user already mapped to an organization, <False> otherwise
+        """
+        return cls.objects.filter(user=user).exists()
+
+
+@receiver(pre_save, sender=UserOrganizationMapping)
+def prevent_adding_user_to_two_organizations(sender, instance, **kwargs):  # pylint: disable=unused-argument
+    """
+    Prevent adding the same user to two organizations.
+
+    TODO: Use `user = models.OneToOneField()` instead of this check.
+    """
+    if not instance.pk and instance.is_user_already_mapped(user=instance.user):
+        raise IntegrityError('Cannot add user to organization. User already added to an organization!')
 
 
 class TahoeSite(models.Model):
