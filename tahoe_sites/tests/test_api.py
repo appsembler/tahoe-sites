@@ -13,7 +13,7 @@ from django.contrib.sites.models import Site
 from organizations.models import Organization
 
 from tahoe_sites import api
-from tahoe_sites.models import TahoeSite
+from tahoe_sites.models import TahoeSite, UserOrganizationMapping
 from tahoe_sites.tests.fatories import UserFactory
 from tahoe_sites.tests.test_models import DefaultsForTestsMixin
 from tahoe_sites.tests.utils import create_organization_mapping
@@ -393,3 +393,17 @@ class TestAPIHelpers(DefaultsForTestsMixin):
                 expected_message='Tahoe Sites: Should not find organization of main site `settings.SITE_ID`'
             ):
                 api.get_current_organization(request=mock.Mock(site=site))
+
+    @ddt.data(True, False)
+    def test_add_user_to_organization(self, is_admin):
+        """
+        Verify that add_user_to_organization maps the user to the organization with the given admin status
+        """
+        assert UserOrganizationMapping.objects.count() == 0
+
+        api.add_user_to_organization(user=self.default_user, organization=self.default_org, is_admin=is_admin)
+        assert UserOrganizationMapping.objects.count() == 1
+        mapping = UserOrganizationMapping.objects.get()
+        assert mapping.user == self.default_user
+        assert mapping.organization == self.default_org
+        assert mapping.is_admin == is_admin
