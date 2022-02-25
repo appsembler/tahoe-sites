@@ -92,22 +92,6 @@ def get_users_of_organization(organization, without_inactive_users=True, without
     )
 
 
-def is_active_admin_on_any_organization(user, org_ids):
-    """
-    Check if the given user is an admin on any of the given organizations
-
-    :param user: user to filter on
-    :param org_ids: QuerySet of organization ids to filter on
-    :return: <True> if user is an admin on any organization, <False> otherwise
-    """
-    return UserOrganizationMapping.objects.filter(
-        user=user,
-        organization_id__in=org_ids,
-        is_active=True,
-        is_admin=True,
-    ).exists()
-
-
 def is_active_admin_on_organization(user, organization):
     """
     Check if the given user is an admin on the given organizations
