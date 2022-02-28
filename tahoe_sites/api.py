@@ -15,6 +15,7 @@ Non-stable APIs they should be placed in the `helpers.py` module instead.
    - New parameters should have safe defaults
  * For breaking changes, new functions should be created
 """
+import crum
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
@@ -250,16 +251,23 @@ def get_uuid_by_site(site):
     return TahoeSite.objects.get(site=site).site_uuid
 
 
-def get_current_site(request):
+def get_site_by_request(request):
     """
-    Return current site.
+    Return the current site from the given request
 
-    This is a copy of Open edX's `openedx.core.djangoapps.theming.helpers.get_current_site`.
-
-    Returns:
-         (django.contrib.sites.models.Site): returns current site
+    :param request: request to get the site from
+    :return: site value in the request
     """
     return getattr(request, 'site', None)
+
+
+def get_current_site():
+    """
+    Return the current site using crum
+
+    :return: site value in the request
+    """
+    return get_site_by_request(request=crum.get_current_request())
 
 
 def get_current_organization(request):
@@ -272,10 +280,20 @@ def get_current_organization(request):
     :raise Organization.MultipleObjectsReturned when more than one organization is returned.
     :return Organization.
     """
-    current_site = get_current_site(request)
+    current_site = get_site_by_request(request)
 
-    main_site_id = getattr(settings, 'SITE_ID', None)
-    if main_site_id and current_site and current_site.id == main_site_id:
+    if is_main_site(get_site_by_request(request)):
         raise Organization.DoesNotExist('Tahoe Sites: Should not find organization of main site `settings.SITE_ID`')
 
     return get_organization_by_site(current_site)
+
+
+def is_main_site(site):
+    """
+    Returns True if the given site is the default one. Returns False otherwise
+
+    :param site: site to check
+    :return: boolean, check result
+    """
+    main_site_id = getattr(settings, 'SITE_ID', None)
+    return main_site_id and site and site.id == main_site_id
