@@ -306,19 +306,46 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         assert api.get_uuid_by_site(site=self.default_django_site) == api.get_uuid_by_organization(self.default_org)
 
-    def test_get_current_site_no_site(self):
+    def test_get_current_site_use_crum(self):
         """
-        Emulate the behaviour of `openedx.core.djangoapps.theming.helpers.get_current_site`.
+        Verify that get_current_site will use crum to get current request
+        """
+        with mock.patch(
+            'tahoe_sites.api.crum.get_current_request',
+            return_value=mock.Mock(site={'domain': 'test.org'})
+        ) as mocked_current_request:
+            self.assertEqual(api.get_current_site(), {'domain': 'test.org'})
+
+        mocked_current_request.assert_called_with()
+
+    def test_get_current_site_no_request_found(self):
+        """
+        Verify that get_current_site will return None if crum.get_current_request returns None for any reason!
+        """
+        with mock.patch('tahoe_sites.api.crum.get_current_request', return_value=None) as mocked_current_request:
+            self.assertIsNone(api.get_current_site())
+
+        mocked_current_request.assert_called_with()
+
+    def test_get_site_by_request_none_request(self):
+        """
+        Verify that get_site_by_request will return None when the given request is None
+        """
+        self.assertIsNone(api.get_site_by_request(request=None))
+
+    def test_get_site_by_request_no_site(self):
+        """
+        Verify that get_site_by_request will return None when no site found in the request
         """
         request = mock.Mock(site=None)
-        self.assertFalse(api.get_current_site(request))
+        self.assertIsNone(api.get_site_by_request(request))
 
-    def test_get_current_site_with_site(self):
+    def test_get_site_by_request_with_site(self):
         """
-        Emulate the behaviour of `openedx.core.djangoapps.theming.helpers.get_current_site`.
+        Verify that get_site_by_request will return the site in the request
         """
         request = mock.Mock(site={'domain': 'test.org'})
-        self.assertTrue(api.get_current_site(request))
+        self.assertIsNotNone(api.get_site_by_request(request))
 
     def test_update_admin_role_active_mapping(self):
         """
@@ -407,3 +434,28 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         assert mapping.user == self.default_user
         assert mapping.organization == self.default_org
         assert mapping.is_admin == is_admin
+
+    @ddt.data(
+        (settings.SITE_ID, True),
+        (settings.SITE_ID + 1, False),
+        (None, False),
+    )
+    @ddt.unpack
+    def test_is_main_site(self, site_id, expected_result):
+        """
+        Verify that is_main_site works correctly
+        """
+        self.assertEqual(api.is_main_site(site=mock.Mock(id=site_id)), expected_result)
+
+    def test_is_main_site_none(self):
+        """
+        Verify that is_main_site returns False if the given site is None
+        """
+        self.assertFalse(api.is_main_site(site=None))
+
+    def test_is_main_site_settings_is_none(self):
+        """
+        Verify that is_main_site returns False if settings.SITE_ID is None
+        """
+        with mock.patch.object(settings, 'SITE_ID', None):
+            self.assertFalse(api.is_main_site(site=mock.Mock(id=99)))
