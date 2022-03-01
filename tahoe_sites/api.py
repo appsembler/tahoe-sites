@@ -20,7 +20,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from organizations import api as organizations_api
-from organizations.models import Organization
+from organizations.models import Organization, OrganizationCourse
 
 from tahoe_sites import zd_helpers
 from tahoe_sites.models import TahoeSite, UserOrganizationMapping
@@ -297,3 +297,19 @@ def is_main_site(site):
     """
     main_site_id = getattr(settings, 'SITE_ID', None)
     return main_site_id and site and site.id == main_site_id
+
+
+def get_organization_by_course(course_id):
+    """
+    Get the organization related to the given course. This method raises an error if the course is linked to
+    many organizations
+
+    :param course_id: course to get the organization for it
+    :return: the related organization
+    """
+    return Organization.objects.filter(
+        pk__in=OrganizationCourse.objects.filter(
+            course_id=str(course_id),
+            active=True,
+        ).values_list('organization_id', flat=True)
+    ).get()
