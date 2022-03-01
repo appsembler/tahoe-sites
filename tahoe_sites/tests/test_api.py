@@ -10,7 +10,8 @@ import ddt
 import pytest
 from django.conf import settings
 from django.contrib.sites.models import Site
-from organizations.models import Organization
+from django.core.exceptions import MultipleObjectsReturned
+from organizations.models import Organization, OrganizationCourse
 
 from tahoe_sites import api
 from tahoe_sites.models import TahoeSite, UserOrganizationMapping
@@ -459,3 +460,64 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         with mock.patch.object(settings, 'SITE_ID', None):
             self.assertFalse(api.is_main_site(site=mock.Mock(id=99)))
+
+    @staticmethod
+    def add_organization_course(organization, course_id='dummy_key', active=True):
+        """
+        Helper to create an OrganizationCourse object
+        """
+        return OrganizationCourse.objects.create(
+            course_id=course_id,
+            organization=organization,
+            active=active,
+        )
+
+    def test_get_organization_by_course(self):
+        """
+        Verify that get_organization_by_course returns the related organization of the given course
+        """
+        self.add_organization_course(organization=self.default_org)
+
+        assert api.get_organization_by_course(course_id='dummy_key') == self.default_org
+
+    def test_get_organization_by_course_inactive_link(self):
+        """
+        Verify that get_organization_by_course raises an exception if the course link is inactive
+        """
+        self.add_organization_course(organization=self.default_org, active=False)
+
+        with self.assertRaises(expected_exception=Organization.DoesNotExist):
+            api.get_organization_by_course(course_id='dummy_key')
+
+    def test_get_organization_by_course_bad_course(self):
+        """
+        Verify that get_organization_by_course raises an exception if the course is not related to any organization
+        (or maybe the course doesn't exist)
+        """
+        with self.assertRaises(expected_exception=Organization.DoesNotExist):
+            api.get_organization_by_course(course_id='dummy_key')
+
+    def test_get_organization_by_course_multi_organization(self):
+        """
+        Verify that get_organization_by_course raises an exception if the course is related to many organizations
+        """
+        second_org = self.create_organization(name='second_org', short_name='O2')
+        self.add_organization_course(organization=self.default_org)
+        self.add_organization_course(organization=second_org)
+
+        with self.assertRaises(expected_exception=MultipleObjectsReturned):
+            api.get_organization_by_course(course_id='dummy_key')
+
+    def test_get_organization_by_course_only_one_active(self):
+        """
+        Verify that get_organization_by_course allows having multiple organization-course links if only one of them
+        is active
+        """
+        second_org = self.create_organization(name='second_org', short_name='O2')
+        third_org = self.create_organization(name='third_org', short_name='O3')
+
+        self.add_organization_course(organization=second_org, active=False)
+        self.add_organization_course(organization=third_org, active=False)
+        self.add_organization_course(organization=self.default_org)
+
+        assert api.get_organization_by_course(course_id='dummy_key') == self.default_org
