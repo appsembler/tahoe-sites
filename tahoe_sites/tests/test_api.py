@@ -98,8 +98,8 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         assert api.get_organization_for_user(self.org2_first_user) == self.org2
 
         # records with inactive user will not be returned
-        self.mapping.is_active = False
-        self.mapping.save()
+        self.org2_first_user.is_active = False
+        self.org2_first_user.save()
         with self.assertRaises(expected_exception=Organization.DoesNotExist):
             api.get_organization_for_user(self.org2_first_user)
 
@@ -110,8 +110,8 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         self._prepare_mapping_data()
 
-        self.mapping.is_active = False
-        self.mapping.save()
+        self.default_user.is_active = False
+        self.default_user.save()
         assert api.get_organization_for_user(self.default_user, fail_if_inactive=False) == self.default_org
 
     def test_get_organization_for_user_without_admins(self):
@@ -139,8 +139,8 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         assert list(api.get_users_of_organization(self.org2)) == [self.org2_first_user, self.org2_second_user]
 
         # inactive users will not be returned
-        self.mapping.is_active = False
-        self.mapping.save()
+        self.org2_first_user.is_active = False
+        self.org2_first_user.save()
         assert list(api.get_users_of_organization(self.org2)) == [self.org2_second_user]
 
     def test_get_users_of_organization_with_inactive_users(self):
@@ -150,8 +150,8 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         self._prepare_mapping_data()
 
-        self.mapping.is_active = False
-        self.mapping.save()
+        self.org2_first_user.is_active = False
+        self.org2_first_user.save()
         assert list(api.get_users_of_organization(self.org2, without_inactive_users=False)) == [
             self.org2_first_user,
             self.org2_second_user
@@ -377,12 +377,11 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         Test update_admin_role_in_organization on inactive UserOrganizationMapping.
         """
         self._prepare_mapping_data()
-        mapping = self.mapping
-        mapping.is_active = False
-        mapping.save()
 
-        user = mapping.user
-        organization = mapping.organization
+        user = self.mapping.user
+        user.is_active = False
+        user.save()
+        organization = self.mapping.organization
 
         # Set as admin, but for inactive.
         api.update_admin_role_in_organization(user, organization, set_as_admin=True)

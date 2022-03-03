@@ -13,7 +13,6 @@ class UserOrganizationMappingAdmin(admin.ModelAdmin):
         'email',
         'username',
         'organization_name',
-        'is_active',
         'is_admin',
     ]
 
@@ -25,7 +24,7 @@ class UserOrganizationMappingAdmin(admin.ModelAdmin):
     ]
 
     list_filter = [
-        'is_active',
+        'user__is_active',
         'is_admin',
     ]
 
