@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2022-03-03
+ - Remove is_active_admin_on_any_organization API
+ - Add more APIs for getting current Site
+ - Add get_organization_by_course API
+ - cleaner ci.yml github actions matrix
+ - Remove is_active Field and rely on User.is_active
+ - Move Backends to this repo
+
 ## [0.1.2] - 2022-02-24
  - Move get_current_organization to this package
  - New API helper update_admin_role_in_organization
