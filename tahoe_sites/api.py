@@ -173,8 +173,11 @@ def update_admin_role_in_organization(user, organization, set_as_admin=False):
     helpers like `is_active_admin_on_organization` should take care of the `is_active` status.
     """
     # Sanity check for params to ensure we're updating a single entry at once.
-    assert user, 'Parameter `user` should not be None'
-    assert organization, 'Parameter `organization` should not be None'
+    if not user:
+        raise ValueError('Parameter `user` should not be None')
+
+    if not organization:
+        raise ValueError('Parameter `organization` should not be None')
 
     UserOrganizationMapping.objects.filter(
         user=user,

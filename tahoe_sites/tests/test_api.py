@@ -393,10 +393,10 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         Test update_admin_role_in_organization when having None parameters.
         """
-        with pytest.raises(AssertionError, match='Parameter `user` should not be None'):
+        with pytest.raises(ValueError, match='Parameter `user` should not be None'):
             api.update_admin_role_in_organization(user=None, organization=object())
 
-        with pytest.raises(AssertionError, match='Parameter `organization` should not be None'):
+        with pytest.raises(ValueError, match='Parameter `organization` should not be None'):
             api.update_admin_role_in_organization(user=object(), organization=None)
 
     @mock.patch('tahoe_sites.api.get_organization_by_site')
