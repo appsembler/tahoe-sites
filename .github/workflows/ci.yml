@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - python-version: 3.8
-            tox-env: py38-codelint  
+            tox-env: py3-codelint
           - python-version: 3.5
             tox-env: py35-codetest-noorgs
           - python-version: 3.5
