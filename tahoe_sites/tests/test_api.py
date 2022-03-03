@@ -1,5 +1,5 @@
 """
-Tests for models
+Tests for APIs
 """
 # pylint: disable=too-many-public-methods
 
