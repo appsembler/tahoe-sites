@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2022-03-03
+ - Fixing a syntax error in 0.1.3 that crashed the package
+ - Removing migration file that deletes `is_active` field
+ - Removing `assert` from production code 
+
 ## [0.1.3] - 2022-03-03
  - Remove is_active_admin_on_any_organization API
  - Add more APIs for getting current Site
