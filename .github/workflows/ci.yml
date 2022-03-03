@@ -6,19 +6,24 @@ on:
   pull_request:
 
 jobs:
-  test-python35:
+  test:
     runs-on: ubuntu-latest
+    name: ${{ matrix.tox-env }}
     strategy:
       matrix:
-        tox-env-suffix:
-          - codetest-noorgs
-          - codetest-withorgs
-          - codelint
-        python-version:
-          - 3.5
-          - 3.8
+        include:
+          - python-version: 3.8
+            tox-env: py38-codelint  
+          - python-version: 3.5
+            tox-env: py35-codetest-noorgs
+          - python-version: 3.5
+            tox-env: py35-codetest-withorgs
+          - python-version: 3.8
+            tox-env: py38-codetest-noorgs
+          - python-version: 3.8
+            tox-env: py38-codetest-withorgs
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -26,5 +31,4 @@ jobs:
       - name: Install dependencies
         run: pip install tox
       - name: Test with tox
-        run: tox -e ${{ matrix.python-version == '3.5' && 'py35' || 'py38' }}-${{ matrix.tox-env-suffix }}
-        if: ${{ matrix.python-version == '3.5' && 'py35' || 'py38' }}-${{ matrix.tox-env-suffix }} != "codelint-py35"
+        run: tox -e ${{ matrix.tox-env }}
