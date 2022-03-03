@@ -108,7 +108,7 @@ class TestUserOrganizationMapping(DefaultsForTestsMixin):
         mapping = create_organization_mapping(user=self.default_user, organization=self.default_org)
 
         with mock.patch('tahoe_sites.models.UserOrganizationMapping.is_user_already_mapped') as mocked_method:
-            mapping.is_active = not mapping.is_active
+            mapping.is_admin = not mapping.is_admin
             mapping.save()
         mocked_method.assert_not_called()
 

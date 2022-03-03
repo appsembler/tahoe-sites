@@ -10,7 +10,7 @@ def create_organization_mapping(user, organization, is_admin=False):
 
     :param user: user to be mapped
     :param organization: organization to be mapped
-    :param is_admin: set user as admin or not
+    :param is_admin: set user as admin or not, default is False
     :return: the created UserOrganizationMapping object
     """
     return UserOrganizationMapping.objects.create(

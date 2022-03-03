@@ -22,7 +22,10 @@ class UserOrganizationMapping(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='+')
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(
+        default=True,
+        db_column=zd_helpers.get_replacement_name('is_active'),
+    ) if zd_helpers.should_site_use_org_models() else None
     is_admin = models.BooleanField(
         default=False,
         # TODO: Remove once we migrate off edx-organizations tables

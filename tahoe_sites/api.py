@@ -61,7 +61,7 @@ def get_organization_for_user(user, fail_if_inactive=True, fail_if_site_admin=Fa
     :return: Organization objects related to the given user
     """
     if fail_if_inactive:
-        extra_params = {'is_active': True}
+        extra_params = {'user__is_active': True}
     else:
         extra_params = {}
     if fail_if_site_admin:
@@ -83,7 +83,7 @@ def get_users_of_organization(organization, without_inactive_users=True, without
     :return: User objects related to the given organization
     """
     if without_inactive_users:
-        extra_params = {'is_active': True}
+        extra_params = {'user__is_active': True}
     else:
         extra_params = {}
     if without_site_admins:
@@ -104,8 +104,8 @@ def is_active_admin_on_organization(user, organization):
     return UserOrganizationMapping.objects.filter(
         user=user,
         organization=organization,
-        is_active=True,
         is_admin=True,
+        user__is_active=True,
     ).exists()
 
 
