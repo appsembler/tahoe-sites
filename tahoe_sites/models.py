@@ -22,10 +22,14 @@ class UserOrganizationMapping(models.Model):
     """
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='+')
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='+')
-    is_active = models.BooleanField(
+
+    # TODO: Remove after production deployment
+    #       https://github.com/appsembler/tahoe-sites/issues/27
+    _deprecated_field_is_active = models.BooleanField(
         default=True,
-        db_column=zd_helpers.get_replacement_name('is_active'),
-    ) if zd_helpers.should_site_use_org_models() else None
+        db_column='is_active,
+    )
+
     is_admin = models.BooleanField(
         default=False,
         # TODO: Remove once we migrate off edx-organizations tables
