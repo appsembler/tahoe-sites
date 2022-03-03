@@ -27,7 +27,7 @@ class UserOrganizationMapping(models.Model):
     #       https://github.com/appsembler/tahoe-sites/issues/27
     _deprecated_field_is_active = models.BooleanField(
         default=True,
-        db_column='is_active,
+        db_column='is_active',
     )
 
     is_admin = models.BooleanField(
