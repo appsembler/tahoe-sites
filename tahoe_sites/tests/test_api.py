@@ -85,7 +85,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         """
         assert api.get_uuid_by_organization(self.default_org) == self.default_org.edx_uuid
 
-    def test_get_organization_for_user_default(self):
+    def test_get_organization_for_user_only_active_users(self):
         """
         Verify that get_organization_for_user helper returns only related to active user
         """
@@ -101,18 +101,18 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         self.org2_first_user.is_active = False
         self.org2_first_user.save()
         with self.assertRaises(expected_exception=Organization.DoesNotExist):
-            api.get_organization_for_user(self.org2_first_user)
+            api.get_organization_for_user(self.org2_first_user, fail_if_inactive=True)
 
-    def test_get_organization_for_user_with_inactive_users(self):
+    def test_get_organization_for_user_default(self):
         """
-        Verify that get_organization_for_user helper can return all organization related to a user
-        including organizations having that user deactivated
+        Verify that get_organization_for_user helper returns the organization related to a user
+        regardless of the user being active or not
         """
         self._prepare_mapping_data()
 
         self.default_user.is_active = False
         self.default_user.save()
-        assert api.get_organization_for_user(self.default_user, fail_if_inactive=False) == self.default_org
+        assert api.get_organization_for_user(self.default_user) == self.default_org
 
     def test_get_organization_for_user_without_admins(self):
         """

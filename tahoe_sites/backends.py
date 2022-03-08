@@ -58,7 +58,7 @@ class OrganizationMemberBackend(AllowAllUsersModelBackend):
         if not is_main_site(site) and user and not user.is_superuser:
             try:
                 # `get_organization_for_user` never return `None` but raises DoesNotExist if no organization is found
-                user_organization = get_organization_for_user(user=user, fail_if_inactive=False)
+                user_organization = get_organization_for_user(user=user)
                 if get_organization_by_site(site=site) == user_organization:
                     result = user
             except Organization.DoesNotExist:
