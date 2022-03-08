@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- Note: Update the `Unreleased link` after adding a new release -->
 
-## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v0.1.4...HEAD)
+## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v0.1.5...HEAD)
+
+## [0.1.5](https://github.com/appsembler/tahoe-sites/compare/v0.1.4...v0.1.5) - 2022-03-08
+ - Change behaviour of get_organization_for_user
+ - Fix local tox not setting the correct pip Version 
 
 ## [0.1.4](https://github.com/appsembler/tahoe-sites/compare/v0.1.3...v0.1.4) - 2022-03-03
  - Fixing a syntax error in 0.1.3 that crashed the package
