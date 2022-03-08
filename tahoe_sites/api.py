@@ -50,13 +50,14 @@ def get_uuid_by_organization(organization):
     return TahoeSite.objects.get(organization=organization).site_uuid
 
 
-def get_organization_for_user(user, fail_if_inactive=True, fail_if_site_admin=False):
+def get_organization_for_user(user, fail_if_inactive=False, fail_if_site_admin=False):
     """
-    Return the organization related to the given user. By default, the it will return None is the user
-    is inactive in the organization
+    Return the organization related to the given user. By default, it will return the related organization regardless
+    of the user being active or not
 
     :param user: user to filter on
-    :param fail_if_inactive: Fail if the user is inactive (default = True)
+    :param fail_if_inactive: Fail if the user is inactive (default = False). If set to <True>; and exception
+            will be raised when the user is inactive (Organization.DoesNotExist)
     :param fail_if_site_admin: Fail if the user is an admin on the organization (default = False)
     :return: Organization objects related to the given user
     """
