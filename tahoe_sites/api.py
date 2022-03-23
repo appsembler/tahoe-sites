@@ -356,7 +356,7 @@ def is_exist_organization_user_by_email(email, organization, must_be_active=Fals
     return user is not None
 
 
-def get_admin_users_queryset_by_email(email):
+def deprecated_get_admin_users_queryset_by_email(email):
     """
     TODO: This method os a temporary one; to be removed after integrating IDP with Studio
     Get a queryset of users where the given email represents an admin, regardless of being active or not

@@ -567,9 +567,9 @@ class TestAPIHelpers(DefaultsForTestsMixin):
             assert not api.is_exist_organization_user_by_email(email='some_email', organization=mock.Mock())
 
     @ddt.data(True, False)
-    def test_get_admin_users_queryset_by_email(self, is_active):
+    def test_deprecated_get_admin_users_queryset_by_email(self, is_active):
         """
-        Verify that get_admin_users_queryset_by_email returns the correct queryset
+        Verify that deprecated_get_admin_users_queryset_by_email returns the correct queryset
         """
         self.default_user.is_active = is_active
         self.default_user.save()
@@ -583,8 +583,10 @@ class TestAPIHelpers(DefaultsForTestsMixin):
 
         mapping1.is_admin = True
         mapping1.save()
-        assert list(api.get_admin_users_queryset_by_email(email=email)) == [self.default_user]
+        assert list(api.deprecated_get_admin_users_queryset_by_email(email=email)) == [self.default_user]
 
         mapping2.is_admin = True
         mapping2.save()
-        assert list(api.get_admin_users_queryset_by_email(email=email)) == [self.default_user, user_same_email]
+        assert list(api.deprecated_get_admin_users_queryset_by_email(email=email)) == [
+            self.default_user, user_same_email
+        ]
