@@ -9,6 +9,7 @@ from unittest import mock
 import ddt
 import pytest
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core.exceptions import MultipleObjectsReturned
 from organizations.models import Organization, OrganizationCourse
@@ -520,3 +521,70 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         self.add_organization_course(organization=self.default_org)
 
         assert api.get_organization_by_course(course_id='dummy_key') == self.default_org
+
+    @ddt.data(True, False)
+    def test_get_organization_user_by_email(self, user_is_active):
+        """
+        Verify that get_organization_user_by_email returns the correct user
+        """
+        self._prepare_mapping_data()
+        self.default_user.is_active = user_is_active
+        self.default_user.save()
+        email = self.default_user.email
+
+        # The email is related to default_org
+        assert api.get_organization_user_by_email(email=email, organization=self.default_org) == self.default_user
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_email(email=email, organization=self.org2)
+
+    def test_get_organization_user_by_email_no_inactive(self):
+        """
+        Verify that get_organization_user_by_email returns None if the user is inactive and none_if_inactive is set
+        """
+        self._prepare_mapping_data()
+        self.default_user.is_active = False
+        self.default_user.save()
+
+        with self.assertRaises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_email(
+                email=self.default_user.email,
+                organization=self.default_org,
+                fail_if_inactive=True,
+            )
+
+    def test_is_exist_organization_user_by_email_exist(self):
+        """
+        Verify that is_exist_organization_user_by_email returns True if the email is in the organization
+        """
+        with mock.patch('tahoe_sites.api.get_organization_user_by_email', return_value=self.default_user):
+            assert api.is_exist_organization_user_by_email(email='some_email', organization=mock.Mock())
+
+    def test_is_exist_organization_user_by_email_not_exist(self):  # pylint: disable=no-self-use
+        """
+        Verify that is_exist_organization_user_by_email returns False if the email is in not the organization
+        """
+        with mock.patch('tahoe_sites.api.get_organization_user_by_email', side_effect=get_user_model().DoesNotExist):
+            assert not api.is_exist_organization_user_by_email(email='some_email', organization=mock.Mock())
+
+    @ddt.data(True, False)
+    def test_get_admin_users_queryset_by_email(self, is_active):
+        """
+        Verify that get_admin_users_queryset_by_email returns the correct queryset
+        """
+        self.default_user.is_active = is_active
+        self.default_user.save()
+
+        # A new user with the same email address of self.default_user
+        email = self.default_user.email
+        user_same_email = UserFactory.create(email=email)
+
+        mapping1 = create_organization_mapping(user=self.default_user, organization=self.default_org)
+        mapping2 = create_organization_mapping(user=user_same_email, organization=self.default_org)
+
+        mapping1.is_admin = True
+        mapping1.save()
+        assert list(api.get_admin_users_queryset_by_email(email=email)) == [self.default_user]
+
+        mapping2.is_admin = True
+        mapping2.save()
+        assert list(api.get_admin_users_queryset_by_email(email=email)) == [self.default_user, user_same_email]
