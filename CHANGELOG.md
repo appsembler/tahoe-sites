@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- Note: Update the `Unreleased link` after adding a new release -->
 
-## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v0.1.5...HEAD)
+## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v0.1.6...HEAD)
+
+## [0.1.6](https://github.com/appsembler/tahoe-sites/compare/v0.1.5...v0.1.6) - 2022-03-24
+ - Add more APIs to support edx-platform smoothly
+ - Add two temporary APIs (start with the name `deprecated_`) which should be removed soon 
 
 ## [0.1.5](https://github.com/appsembler/tahoe-sites/compare/v0.1.4...v0.1.5) - 2022-03-08
  - Change behaviour of get_organization_for_user
