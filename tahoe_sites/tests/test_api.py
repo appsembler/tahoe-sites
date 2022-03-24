@@ -545,9 +545,57 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         self.default_user.is_active = False
         self.default_user.save()
 
-        with self.assertRaises(get_user_model().DoesNotExist):
+        with pytest.raises(get_user_model().DoesNotExist):
             api.get_organization_user_by_email(
                 email=self.default_user.email,
+                organization=self.default_org,
+                fail_if_inactive=True,
+            )
+
+    @ddt.data(True, False)
+    def test_get_organization_user_by_username_or_email(self, user_is_active):
+        """
+        Verify that get_organization_user_by_username_or_email returns the correct user
+        """
+        self._prepare_mapping_data()
+        self.default_user.is_active = user_is_active
+        self.default_user.save()
+        email = self.default_user.email
+        username = self.default_user.username
+
+        # The email is related to default_org
+        assert api.get_organization_user_by_username_or_email(
+            username_or_email=email,
+            organization=self.default_org
+        ) == self.default_user
+        assert api.get_organization_user_by_username_or_email(
+            username_or_email=username,
+            organization=self.default_org
+        ) == self.default_user
+
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(username_or_email=email, organization=self.org2)
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(username_or_email=username, organization=self.org2)
+
+    def test_get_organization_user_by_username_or_email_no_inactive(self):
+        """
+        Verify that get_organization_user_by_username_or_email returns None if the user is inactive
+        and none_if_inactive is set
+        """
+        self._prepare_mapping_data()
+        self.default_user.is_active = False
+        self.default_user.save()
+
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(
+                username_or_email=self.default_user.email,
+                organization=self.default_org,
+                fail_if_inactive=True,
+            )
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(
+                username_or_email=self.default_user.username,
                 organization=self.default_org,
                 fail_if_inactive=True,
             )
@@ -567,9 +615,9 @@ class TestAPIHelpers(DefaultsForTestsMixin):
             assert not api.is_exist_organization_user_by_email(email='some_email', organization=mock.Mock())
 
     @ddt.data(True, False)
-    def test_get_admin_users_queryset_by_email(self, is_active):
+    def test_deprecated_get_admin_users_queryset_by_email(self, is_active):
         """
-        Verify that get_admin_users_queryset_by_email returns the correct queryset
+        Verify that deprecated_get_admin_users_queryset_by_email returns the correct queryset
         """
         self.default_user.is_active = is_active
         self.default_user.save()
@@ -583,8 +631,26 @@ class TestAPIHelpers(DefaultsForTestsMixin):
 
         mapping1.is_admin = True
         mapping1.save()
-        assert list(api.get_admin_users_queryset_by_email(email=email)) == [self.default_user]
+        assert list(api.deprecated_get_admin_users_queryset_by_email(email=email)) == [self.default_user]
 
         mapping2.is_admin = True
         mapping2.save()
-        assert list(api.get_admin_users_queryset_by_email(email=email)) == [self.default_user, user_same_email]
+        assert list(api.deprecated_get_admin_users_queryset_by_email(email=email)) == [
+            self.default_user, user_same_email
+        ]
+
+    @ddt.data(True)
+    def test_deprecated_is_existing_email_but_not_linked_yet(self, is_active):
+        """
+        Verify that deprecated_is_existing_email_but_not_linked_yet returns the correct result
+        """
+        email = 'testing.email.for.deprecated.method@example.com'
+        assert not api.deprecated_is_existing_email_but_not_linked_yet(email=email)
+
+        user = UserFactory.create(email=email)
+        user.is_active = is_active
+        user.save()
+        assert api.deprecated_is_existing_email_but_not_linked_yet(email=email)
+
+        create_organization_mapping(user=user, organization=self.default_org)
+        assert not api.deprecated_is_existing_email_but_not_linked_yet(email=email)

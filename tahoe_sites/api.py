@@ -19,6 +19,7 @@ import crum
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.db.models import Q
 from organizations import api as organizations_api
 from organizations.models import Organization, OrganizationCourse
 
@@ -340,6 +341,27 @@ def get_organization_user_by_email(email, organization, fail_if_inactive=False):
     )
 
 
+def get_organization_user_by_username_or_email(username_or_email, organization, fail_if_inactive=False):
+    """
+    Get the user owning the given email address in the given organization. With an option to return None if
+    the user is inactive
+
+    :param username_or_email: user's username or email to search for
+    :param organization: organization to filter on
+    :param fail_if_inactive: when <True>; the method will fail if the user is inactive. (default is False)
+    :return: user object
+    """
+    if fail_if_inactive:
+        extra_params = {'user__is_active': True}
+    else:
+        extra_params = {}
+
+    return get_user_model().objects.get(
+        Q(email=username_or_email) | Q(username=username_or_email),
+        pk__in=UserOrganizationMapping.objects.filter(organization=organization, **extra_params).values('user_id'),
+    )
+
+
 def is_exist_organization_user_by_email(email, organization, must_be_active=False):
     """
     Check if the user owning the given email address in the given organization exists or Not
@@ -356,7 +378,22 @@ def is_exist_organization_user_by_email(email, organization, must_be_active=Fals
     return user is not None
 
 
-def get_admin_users_queryset_by_email(email):
+def deprecated_is_existing_email_but_not_linked_yet(email):
+    """
+    TODO: This method os a temporary one; to be removed after integrating IDP with Studio
+    Check if the given email is related to an existing user but not linked to any site yet
+
+    :param email: user's email to filter on
+    :return: boolean
+    """
+    return get_user_model().objects.filter(
+        email=email,
+    ).exclude(
+        pk__in=UserOrganizationMapping.objects.filter().values('user_id'),
+    ).exists()
+
+
+def deprecated_get_admin_users_queryset_by_email(email):
     """
     TODO: This method os a temporary one; to be removed after integrating IDP with Studio
     Get a queryset of users where the given email represents an admin, regardless of being active or not
