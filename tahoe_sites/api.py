@@ -378,6 +378,21 @@ def is_exist_organization_user_by_email(email, organization, must_be_active=Fals
     return user is not None
 
 
+def deprecated_is_existing_email_but_not_linked_yet(email):
+    """
+    TODO: This method os a temporary one; to be removed after integrating IDP with Studio
+    Check if the given email is related to an existing user but not linked to any site yet
+
+    :param email: user's email to filter on
+    :return: boolean
+    """
+    return get_user_model().objects.filter(
+        email=email,
+    ).exclude(
+        pk__in=UserOrganizationMapping.objects.filter().values('user_id'),
+    ).exists()
+
+
 def deprecated_get_admin_users_queryset_by_email(email):
     """
     TODO: This method os a temporary one; to be removed after integrating IDP with Studio

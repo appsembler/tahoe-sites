@@ -638,3 +638,19 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         assert list(api.deprecated_get_admin_users_queryset_by_email(email=email)) == [
             self.default_user, user_same_email
         ]
+
+    @ddt.data(True)
+    def test_deprecated_is_existing_email_but_not_linked_yet(self, is_active):
+        """
+        Verify that deprecated_is_existing_email_but_not_linked_yet returns the correct result
+        """
+        email = 'testing.email.for.deprecated.method@example.com'
+        assert not api.deprecated_is_existing_email_but_not_linked_yet(email=email)
+
+        user = UserFactory.create(email=email)
+        user.is_active = is_active
+        user.save()
+        assert api.deprecated_is_existing_email_but_not_linked_yet(email=email)
+
+        create_organization_mapping(user=user, organization=self.default_org)
+        assert not api.deprecated_is_existing_email_but_not_linked_yet(email=email)
