@@ -545,9 +545,57 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         self.default_user.is_active = False
         self.default_user.save()
 
-        with self.assertRaises(get_user_model().DoesNotExist):
+        with pytest.raises(get_user_model().DoesNotExist):
             api.get_organization_user_by_email(
                 email=self.default_user.email,
+                organization=self.default_org,
+                fail_if_inactive=True,
+            )
+
+    @ddt.data(True, False)
+    def test_get_organization_user_by_username_or_email(self, user_is_active):
+        """
+        Verify that get_organization_user_by_username_or_email returns the correct user
+        """
+        self._prepare_mapping_data()
+        self.default_user.is_active = user_is_active
+        self.default_user.save()
+        email = self.default_user.email
+        username = self.default_user.username
+
+        # The email is related to default_org
+        assert api.get_organization_user_by_username_or_email(
+            username_or_email=email,
+            organization=self.default_org
+        ) == self.default_user
+        assert api.get_organization_user_by_username_or_email(
+            username_or_email=username,
+            organization=self.default_org
+        ) == self.default_user
+
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(username_or_email=email, organization=self.org2)
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(username_or_email=username, organization=self.org2)
+
+    def test_get_organization_user_by_username_or_email_no_inactive(self):
+        """
+        Verify that get_organization_user_by_username_or_email returns None if the user is inactive
+        and none_if_inactive is set
+        """
+        self._prepare_mapping_data()
+        self.default_user.is_active = False
+        self.default_user.save()
+
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(
+                username_or_email=self.default_user.email,
+                organization=self.default_org,
+                fail_if_inactive=True,
+            )
+        with pytest.raises(get_user_model().DoesNotExist):
+            api.get_organization_user_by_username_or_email(
+                username_or_email=self.default_user.username,
                 organization=self.default_org,
                 fail_if_inactive=True,
             )

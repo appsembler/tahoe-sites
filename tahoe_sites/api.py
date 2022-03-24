@@ -19,6 +19,7 @@ import crum
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.db.models import Q
 from organizations import api as organizations_api
 from organizations.models import Organization, OrganizationCourse
 
@@ -337,6 +338,27 @@ def get_organization_user_by_email(email, organization, fail_if_inactive=False):
     return get_user_model().objects.get(
         pk__in=UserOrganizationMapping.objects.filter(organization=organization, **extra_params).values('user_id'),
         email=email,
+    )
+
+
+def get_organization_user_by_username_or_email(username_or_email, organization, fail_if_inactive=False):
+    """
+    Get the user owning the given email address in the given organization. With an option to return None if
+    the user is inactive
+
+    :param username_or_email: user's username or email to search for
+    :param organization: organization to filter on
+    :param fail_if_inactive: when <True>; the method will fail if the user is inactive. (default is False)
+    :return: user object
+    """
+    if fail_if_inactive:
+        extra_params = {'user__is_active': True}
+    else:
+        extra_params = {}
+
+    return get_user_model().objects.get(
+        Q(email=username_or_email) | Q(username=username_or_email),
+        pk__in=UserOrganizationMapping.objects.filter(organization=organization, **extra_params).values('user_id'),
     )
 
 
