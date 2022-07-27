@@ -3,10 +3,14 @@ from setuptools import setup, find_packages
 
 import tahoe_sites
 
+description = 'Site and organization multi-tenancy management for Appsembler Tahoe'
+
 setup(
     name='tahoe-sites',
     version=tahoe_sites.__version__,
-    description='Site and organization multi-tenancy management for Appsembler Tahoe',
+    description=description,
+    long_description=description,
+    long_description_content_type="text/markdown",
     author='Appsembler',
     url='https://github.com/appsembler/tahoe-sites',
     classifiers=[

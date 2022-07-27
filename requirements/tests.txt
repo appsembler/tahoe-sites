@@ -2,12 +2,16 @@
 Django>=2.2,<3.0 ; python_version == '3.5'
 edx-opaque-keys[django]==2.1.1 ; python_version == '3.5'
 django-model-utils<=4.0.0 ; python_version == '3.5'
+edx-django-utils<=3.2.1 ; python_version == '3.5'
+django-crum<=0.7.6 ; python_version == '3.5'
 # TODO: Use edx-organizations==5.2.0 ; python_version == '3.5'
 
 # Koa requirements
 Django>=2.2,<3.0 ; python_version == '3.8'
 edx-opaque-keys[django]==2.1.1 ; python_version == '3.8'
-django-model-utils==4.0.0 ; python_version == '3.8'
+django-model-utils>=4.0.0 ; python_version == '3.8'
+edx-django-utils>=3.2.1 ; python_version == '3.8'
+django-crum>=0.7.6 ; python_version == '3.8'
 # TODO: Use edx-organizations==5.3.0 ; python_version == '3.8'
 
 # Test requirements
