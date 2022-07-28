@@ -390,7 +390,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
             'Should not be active admin, because the user is admin but is_active=False'
         )
 
-    def test_update_admin_role_null_parameters(self):  # pylint: disable=no-self-use
+    def test_update_admin_role_null_parameters(self):
         """
         Test update_admin_role_in_organization when having None parameters.
         """
@@ -401,7 +401,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
             api.update_admin_role_in_organization(user=object(), organization=None)
 
     @mock.patch('tahoe_sites.api.get_organization_by_site')
-    def test_get_current_organization(self, mock_get_organization_by_site):  # pylint: disable=no-self-use
+    def test_get_current_organization(self, mock_get_organization_by_site):
         """
         Verify that get_current_organization calls get_organization_by_site to return the current site
         """
@@ -607,7 +607,7 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         with mock.patch('tahoe_sites.api.get_organization_user_by_email', return_value=self.default_user):
             assert api.is_exist_organization_user_by_email(email='some_email', organization=mock.Mock())
 
-    def test_is_exist_organization_user_by_email_not_exist(self):  # pylint: disable=no-self-use
+    def test_is_exist_organization_user_by_email_not_exist(self):
         """
         Verify that is_exist_organization_user_by_email returns False if the email is in not the organization
         """

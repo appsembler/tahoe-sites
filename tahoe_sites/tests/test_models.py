@@ -18,7 +18,7 @@ class DefaultsForTestsMixin(TestCase):
     """
     Mixin that creates some default objects
     """
-    def create_organization(self, name, short_name, active=True):  # pylint: disable=no-self-use
+    def create_organization(self, name, short_name, active=True):
         """
         helper to create an Organization object
         """
@@ -29,7 +29,7 @@ class DefaultsForTestsMixin(TestCase):
             short_name=short_name,
         )
 
-    def create_django_site(self, domain):  # pylint: disable=no-self-use
+    def create_django_site(self, domain):
         """
         helper to create a Site object
         """
