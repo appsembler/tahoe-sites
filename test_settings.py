@@ -25,6 +25,7 @@ INSTALLED_APPS = (
     'organizations',
     'tahoe_sites',
     'django_nose',
+    'rest_framework.authtoken',
 )
 
 MIDDLEWARE = [
@@ -33,7 +34,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-ROOT_URLCONF = 'organizations.urls'
+ROOT_URLCONF = 'tahoe_sites.urls'
 
 # DRF Settings
 REST_FRAMEWORK = {
