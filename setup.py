@@ -24,4 +24,13 @@ setup(
         'Programming Language :: Python :: 3.8',
     ],
     packages=find_packages(exclude=['tests']),
+    python_requires=">=3.5",
+    entry_points={
+        "lms.djangoapp": [
+            "tahoe_sites = tahoe_sites.apps:TahoeSitesConfig",
+        ],
+        "cms.djangoapp": [
+            "tahoe_sites = tahoe_sites.apps:TahoeSitesConfig",
+        ],
+    },
 )

@@ -1,16 +1,15 @@
 """
-App configuration model
+Tests TahoeSitesConfig Open edX configuration.
 """
-from django.apps import AppConfig
+# pylint: disable=duplicate-code
+from tahoe_sites.apps import TahoeSitesConfig
 
 
-class TahoeSitesConfig(AppConfig):
+def test_app_config():
     """
-    Configuration model
+    Verify that the app is compatible with edx plugins
     """
-    name = 'tahoe_sites'
-
-    plugin_app = {
+    assert TahoeSitesConfig.plugin_app == {
         'url_config': {
             'lms.djangoapp': {
                 'namespace': 'tahoe_sites',
@@ -21,7 +20,6 @@ class TahoeSitesConfig(AppConfig):
                 'app_name': 'tahoe_sites',
             }
         },
-
         'settings_config': {
             'lms.djangoapp': {
                 'production': {
@@ -34,4 +32,4 @@ class TahoeSitesConfig(AppConfig):
                 },
             },
         },
-    }
+    }, 'Should initiate the app as an Open edX plugin.'
