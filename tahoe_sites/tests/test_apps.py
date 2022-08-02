@@ -14,10 +14,12 @@ def test_app_config():
             'lms.djangoapp': {
                 'namespace': 'tahoe_sites',
                 'app_name': 'tahoe_sites',
+                'regex': '^tahoe-sites/',
             },
             'cms.djangoapp': {
                 'namespace': 'tahoe_sites',
                 'app_name': 'tahoe_sites',
+                'regex': '^tahoe-sites/',
             }
         },
         'settings_config': {
