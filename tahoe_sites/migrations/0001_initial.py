@@ -14,7 +14,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('organizations', '0011_historicalorganization_edx_uuid'),
+        ('organizations', '0007_historicalorganization'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
