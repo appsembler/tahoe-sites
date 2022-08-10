@@ -378,6 +378,58 @@ def is_exist_organization_user_by_email(email, organization, must_be_active=Fals
     return user is not None
 
 
+def get_tahoe_sites_auth_backends():
+    """
+    Get a list of auth backends provided by tahoe_sites
+
+    :return: a list of strings representing auth backends
+    """
+    return [
+        'tahoe_sites.backends.DefaultSiteBackend',
+        'tahoe_sites.backends.OrganizationMemberBackend',
+    ]
+
+
+def get_organizations_from_uuids(uuids):
+    """
+    Get a queryset of <Organization> filtered by the given list of uuids
+
+    :param uuids: list of uuid objects of the needed organizations
+    :return: queryset of <Organization> filtered by given list of uuids
+    """
+    uuid_strings = [str(site_uuid) for site_uuid in uuids]
+
+    if zd_helpers.should_site_use_org_models():
+        return Organization.objects.filter(
+            edx_uuid__in=uuid_strings,
+        )
+
+    return Organization.objects.filter(
+        pk__in=TahoeSite.objects.filter(
+            site_uuid__in=uuid_strings
+        ).values('organization_id')
+    )
+
+
+def get_sites_from_organizations(organizations):
+    """
+    Get a queryset of <Site> filtered by the given list of organizations
+
+    :param organizations: organizations to filter with
+    :return: queryset of <Site> filtered by given list of organizations
+    """
+    if zd_helpers.should_site_use_org_models():
+        return Site.objects.filter(
+            organizations__in=organizations,
+        )
+
+    return Site.objects.filter(
+        pk__in=TahoeSite.objects.filter(
+            organization__in=organizations
+        ).values('site_id')
+    )
+
+
 def deprecated_is_existing_email_but_not_linked_yet(email):
     """
     TODO: This method os a temporary one; to be removed after integrating IDP with Studio
