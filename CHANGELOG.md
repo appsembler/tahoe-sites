@@ -7,7 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- Note: Update the `Unreleased link` after adding a new release -->
 
-## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v0.1.6...HEAD)
+## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v1.3.0...HEAD)
+
+## [1.3.0](https://github.com/appsembler/tahoe-sites/compare/v1.2.0...v1.3.0) - 2022-08-11
+ - Add new API get_tahoe_sites_auth_backends
+ - Add new API get_organizations_from_uuids
+ - Add new API get_sites_from_organizations
+
+## [1.2.0](https://github.com/appsembler/tahoe-sites/compare/v1.0.0...v1.2.0) - 2022-08-02
+ - Use a versioned api path for organizations view sets
+
+## [1.0.0](https://github.com/appsembler/tahoe-sites/compare/v0.1.6...v1.0.0) - 2022-07-28
+ - Add tahoe_sites organizations viewset for Dashboard
+ - Make the package compatible with edx plugins structure
+ - Fix PyPi publish
 
 ## [0.1.6](https://github.com/appsembler/tahoe-sites/compare/v0.1.5...v0.1.6) - 2022-03-24
  - Add more APIs to support edx-platform smoothly

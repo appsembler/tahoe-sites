@@ -654,3 +654,68 @@ class TestAPIHelpers(DefaultsForTestsMixin):
 
         create_organization_mapping(user=user, organization=self.default_org)
         assert not api.deprecated_is_existing_email_but_not_linked_yet(email=email)
+
+    def test_get_tahoe_sites_auth_backends(self):
+        """
+        Verify get_tahoe_sites_auth_backends returns the correct list
+        """
+        assert api.get_tahoe_sites_auth_backends() == [
+            'tahoe_sites.backends.DefaultSiteBackend',
+            'tahoe_sites.backends.OrganizationMemberBackend',
+        ]
+
+    def _prepare_tahoe_sites_data(self):
+        """
+        Helper to prepare data for tests that need a few organizations created
+        """
+        return {
+            '1': api.create_tahoe_site(domain='org1', short_name='org1'),
+            '2': api.create_tahoe_site(domain='org2', short_name='org2'),
+            '3': api.create_tahoe_site(domain='org3', short_name='org3'),
+        }
+
+    def test_get_organizations_from_uuids(self):
+        """
+        Verify that get_organizations_from_uuids returns the correct queryset of Organization
+        """
+        data = self._prepare_tahoe_sites_data()
+        uuids = [data['1']['site_uuid'], data['3']['site_uuid']]
+
+        result = api.get_organizations_from_uuids(uuids=uuids)
+        assert result.count() == 2
+        assert data['1']['organization'] in result
+        assert data['3']['organization'] in result
+
+    def test_get_organizations_from_uuids_ignore_wrong_uuids(self):
+        """
+        Verify that get_organizations_from_uuids ignores wrong uuids
+        """
+        data = self._prepare_tahoe_sites_data()
+        uuids = [data['1']['site_uuid'], uuid.uuid4()]
+
+        result = api.get_organizations_from_uuids(uuids=uuids)
+        assert result.count() == 1
+        assert data['1']['organization'] in result
+
+    def test_get_organizations_from_uuids_ignore_duplicate_uuids(self):
+        """
+        Verify that get_organizations_from_uuids ignores duplication in uuids
+        """
+        data = self._prepare_tahoe_sites_data()
+        uuids = [data['1']['site_uuid'], data['1']['site_uuid']]
+
+        result = api.get_organizations_from_uuids(uuids=uuids)
+        assert result.count() == 1
+        assert data['1']['organization'] in result
+
+    def test_get_sites_from_organizations(self):
+        """
+        Verify that get_sites_from_organizations returns the correct queryset of Site
+        """
+        data = self._prepare_tahoe_sites_data()
+        orgs = [data['1']['organization'], data['3']['organization']]
+
+        result = api.get_sites_from_organizations(organizations=orgs)
+        assert result.count() == 2
+        assert data['1']['site'] in result
+        assert data['3']['site'] in result
