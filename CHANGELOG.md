@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 <!-- Note: Update the `Unreleased link` after adding a new release -->
 
-## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v1.3.0...HEAD)
+## [Unreleased](https://github.com/appsembler/tahoe-sites/compare/v1.3.1...HEAD)
+
+## [1.3.1](https://github.com/appsembler/tahoe-sites/compare/v1.3.0...v1.3.1) - 2022-08-16
+ - `create_tahoe_site`: ensure organization names are unique
 
 ## [1.3.0](https://github.com/appsembler/tahoe-sites/compare/v1.2.0...v1.3.0) - 2022-08-11
  - Add new API get_tahoe_sites_auth_backends
