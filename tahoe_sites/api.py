@@ -19,8 +19,8 @@ import crum
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
+from django.db import IntegrityError
 from django.db.models import Q
-from organizations import api as organizations_api
 from organizations.models import Organization, OrganizationCourse
 
 from tahoe_sites import zd_helpers
@@ -144,8 +144,20 @@ def create_tahoe_site(domain, short_name, uuid=None):
     if uuid and zd_helpers.should_site_use_org_models():
         organization_data['edx_uuid'] = uuid
 
-    organization_serialized = organizations_api.add_organization(organization_data)
-    organization = Organization.objects.get(pk=organization_serialized['id'])
+    existing_organizations = Organization.objects.filter(
+        Q(name__iexact=short_name) | Q(short_name__iexact=short_name)
+    )
+    if existing_organizations.exists():
+        message = 'Found existing organizations with similar name to "{short_name}" orgs={orgs}.'.format(
+            short_name=short_name,
+            orgs=[
+                'pk={org.pk}, name={org.name}, short_name={org.short_name}'.format(org=org)
+                for org in existing_organizations
+            ],
+        )
+        raise IntegrityError(message)
+
+    organization = Organization.objects.create(**organization_data)
 
     site = Site.objects.create(domain=domain, name=short_name)
 
@@ -163,7 +175,7 @@ def create_tahoe_site(domain, short_name, uuid=None):
     return {
         'site_uuid': returned_uuid,
         'site': site,
-        'organization': Organization.objects.get(pk=organization_serialized['id']),
+        'organization': organization,
     }
 
 

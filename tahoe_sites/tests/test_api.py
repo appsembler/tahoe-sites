@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
 from django.core.exceptions import MultipleObjectsReturned
+from django.db import IntegrityError
 from organizations.models import Organization, OrganizationCourse
 
 from tahoe_sites import api
@@ -719,3 +720,27 @@ class TestAPIHelpers(DefaultsForTestsMixin):
         assert result.count() == 2
         assert data['1']['site'] in result
         assert data['3']['site'] in result
+
+
+@pytest.mark.parametrize('duplicate_param', ['short_name', 'domain', 'uuid'])
+@pytest.mark.django_db
+def test_unique_checks_on_create_tahoe_site(duplicate_param):
+    """
+    Ensure create_tahoe_site cannot reuse domain name, site uuid and short_name.
+    """
+    first_site_params = {
+        'domain': 'blue-site1.org',
+        'short_name': 'blue-org',
+        'uuid': 'a680e770-1d3d-11ed-a64c-4b37ea799c5c',
+    }
+    api.create_tahoe_site(**first_site_params)
+
+    second_site_params = {
+        'domain': 'red-site1.org',
+        'short_name': 'red-org',
+        'uuid': 'd35362be-1d3d-11ed-a100-eb8e533e0cd4',
+    }
+    second_site_params[duplicate_param] = first_site_params[duplicate_param]
+
+    with pytest.raises(IntegrityError):
+        api.create_tahoe_site(**second_site_params)
