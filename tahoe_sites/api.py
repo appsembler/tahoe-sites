@@ -216,11 +216,12 @@ def get_site_by_organization(organization):
     """
     Get the site by its related organization
 
+    :raise ObjectDoesNotExist when the site isn't found.
     :param organization: Organization object to filter on
     :return: Site object related to the given organization
     """
     if zd_helpers.should_site_use_org_models():
-        return organization.sites.first()
+        return organization.sites.get()
     return TahoeSite.objects.get(organization=organization).site
 
 
@@ -330,6 +331,19 @@ def get_organization_by_course(course_id):
             active=True,
         ).values_list('organization_id', flat=True)
     ).get()
+
+
+def get_site_by_course(course_id):
+    """
+    Get the site related to the given course.
+
+    This method raises an error if the course is linked to many organizations.
+
+    :param course_id: course to get the site for it
+    :return: the related Site.
+    """
+    organization = get_organization_by_course(course_id)
+    return get_site_by_organization(organization)
 
 
 def get_organization_user_by_email(email, organization, fail_if_inactive=False):
