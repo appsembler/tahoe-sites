@@ -473,6 +473,31 @@ class TestAPIHelpers(DefaultsForTestsMixin):
             active=active,
         )
 
+    def test_get_site_by_course(self):
+        """
+        Verify that get_site_by_course returns the related site of the given course
+        """
+        org_data = api.create_tahoe_site(domain='org1', short_name='org1')
+        self.add_organization_course(organization=org_data['organization'], course_id='dummy_key')
+        assert api.get_site_by_course(course_id='dummy_key') == org_data['site']
+
+    def test_get_site_by_course_not_found(self):
+        """
+        Test `get_site_by_course` without a site or organization
+        """
+        with self.assertRaises(Organization.DoesNotExist):
+            assert not api.get_site_by_course(course_id='dummy_key'), 'Organization do not exist yet.'
+
+        org = self.create_organization('test_org', 'test_org')
+        self.add_organization_course(organization=org)
+        valid_exceptions = (Site.DoesNotExist, TahoeSite.DoesNotExist,)  # Shouldn't raise Organization.DoesNotExist
+
+        with self.assertRaises(valid_exceptions):
+            assert not api.get_site_by_organization(org), 'Ensure site is not created'
+
+        with self.assertRaises(valid_exceptions):
+            assert not api.get_site_by_course(course_id='dummy_key'), 'Organization exists but site not found.'
+
     def test_get_organization_by_course(self):
         """
         Verify that get_organization_by_course returns the related organization of the given course
