@@ -19,7 +19,7 @@ import crum
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.sites.models import Site
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import Q
 from organizations.models import Organization, OrganizationCourse
 
@@ -157,20 +157,21 @@ def create_tahoe_site(domain, short_name, uuid=None):
         )
         raise IntegrityError(message)
 
-    organization = Organization.objects.create(**organization_data)
+    with transaction.atomic():
+        organization = Organization.objects.create(**organization_data)
 
-    site = Site.objects.create(domain=domain, name=short_name)
+        site = Site.objects.create(domain=domain, name=short_name)
 
-    if zd_helpers.should_site_use_org_models():
-        returned_uuid = organization.edx_uuid
-        organization.sites.add(site)
-    else:
-        extra = {'site_uuid': uuid} if uuid else {}
-        returned_uuid = TahoeSite.objects.create(
-            organization=organization,
-            site=site,
-            **extra,
-        ).site_uuid
+        if zd_helpers.should_site_use_org_models():
+            returned_uuid = organization.edx_uuid
+            organization.sites.add(site)
+        else:
+            extra = {'site_uuid': uuid} if uuid else {}
+            returned_uuid = TahoeSite.objects.create(
+                organization=organization,
+                site=site,
+                **extra,
+            ).site_uuid
 
     return {
         'site_uuid': returned_uuid,
